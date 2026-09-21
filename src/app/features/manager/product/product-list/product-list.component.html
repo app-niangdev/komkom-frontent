@@ -1,0 +1,231 @@
+<vex-store-header [company]="company" [store]="store" pageSubtitle="Gestion des produits">
+</vex-store-header>
+
+<div class="product-list-page w-full flex flex-col px-3 sm:px-6 py-3 sm:py-4 min-h-0 pb-safe">
+
+  <!-- En-tête : filtres -->
+  <div class="card mb-3 sm:mb-4 shadow-md rounded-lg bg-white overflow-hidden flex-shrink-0">
+    <div class="p-3 sm:p-4">
+      <div class="flex flex-col gap-3">
+
+        <!-- Titre + actions -->
+        <div class="flex items-start justify-between gap-2">
+          <div class="min-w-0 flex-1">
+            <h1 class="text-base sm:text-xl font-bold text-gray-800 leading-tight truncate">
+              Liste des produits
+            </h1>
+            <p class="mt-0.5 text-xs sm:text-sm text-gray-600">
+              <span class="font-medium">{{ meta.total }}</span>
+              produit{{ meta.total > 1 ? 's' : '' }}
+            </p>
+            <p class="mt-1 text-[11px] sm:text-xs text-gray-500">
+              Mode boutique: {{ usesMeasurements ? 'avec mesures' : 'sans mesures' }}
+            </p>
+          </div>
+
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <button mat-stroked-button type="button" (click)="toggleMobileFilters()"
+              class="sm:hidden !h-9 !px-2.5 !text-xs !min-w-0" [attr.aria-expanded]="mobileFiltersExpanded"
+              aria-label="Afficher ou masquer les filtres">
+              <mat-icon class="!text-lg !mr-0.5">{{ mobileFiltersExpanded ? 'expand_less' : 'tune' }}</mat-icon>
+              {{ mobileFiltersExpanded ? 'Masquer' : 'Filtres' }}
+            </button>
+
+            <button *ngIf="!isSeller" mat-mini-fab color="primary" type="button" (click)="add()" class="sm:hidden"
+              matTooltip="Ajouter un produit" aria-label="Ajouter un produit">
+              <mat-icon>add</mat-icon>
+            </button>
+
+            <button mat-raised-button color="primary" *ngIf="!isSeller" (click)="add()" matTooltip="Ajouter un produit"
+              class="hidden sm:inline-flex items-center shadow-md hover:shadow-lg">
+              <mat-icon class="mr-1">add</mat-icon>
+              Ajouter
+            </button>
+          </div>
+        </div>
+
+        <!-- Recherche + catégorie (repliable sur mobile) -->
+        <div class="mobile-filters-panel flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3"
+          [class.mobile-filters-panel--collapsed]="!mobileFiltersExpanded">
+          <div
+            class="flex items-center border border-primary-500 bg-white rounded-full overflow-hidden ltr:pl-3 sm:ltr:pl-4 rtl:pr-3 sm:rtl:pr-4 h-10 sm:h-10 flex-1 min-w-0 shadow-sm">
+            <mat-icon class="text-secondary flex-none icon-sm">search</mat-icon>
+            <input [formControl]="searchCtrl" (keyup.enter)="search()"
+              class="border-0 h-10 outline-none ltr:pl-2 sm:ltr:pl-3 rtl:pr-2 sm:rtl:pr-3 placeholder:text-secondary bg-transparent flex-auto text-sm w-full min-w-0"
+              placeholder="Rechercher un produit..." type="search" enterkeyhint="search" />
+          </div>
+
+          <mat-form-field subscriptSizing="dynamic" class="w-full sm:w-44 md:w-48 flex-shrink-0" appearance="outline">
+            <mat-label>Catégorie</mat-label>
+            <mat-select [(ngModel)]="selectedCategory" (selectionChange)="filterByCategory()">
+              <mat-option [value]="null">Toutes</mat-option>
+              <mat-option *ngFor="let item of categories" [value]="item">{{ item.name }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" type="button" (click)="search()"
+            class="!h-10 flex-shrink-0 flex items-center justify-center shadow-sm" matTooltip="Rechercher">
+            <mat-icon class="mr-1">search</mat-icon>
+            Rechercher
+          </button>
+
+          <button mat-stroked-button type="button" (click)="resetFilters()"
+            class="!h-10 flex-shrink-0 flex items-center justify-center" matTooltip="Réinitialiser la recherche">
+            <mat-icon class="mr-1">refresh</mat-icon>
+            Réinitialiser
+          </button>
+
+          <button mat-raised-button color="primary" *ngIf="!isSeller" (click)="add()"
+            class="sm:hidden w-full !h-10 flex items-center justify-center shadow-md mobile-filters-add-btn">
+            <mat-icon class="mr-1">add</mat-icon>
+            Ajouter un produit
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu (div simple : évite le px-6 parasite de vex-page-layout-content) -->
+  <div class="product-list-content flex-1 min-h-0 flex flex-col w-full min-w-0">
+
+    <!-- Chargement -->
+    <komkom-page-loader *ngIf="isLoading" message="Chargement des produits…"></komkom-page-loader>
+
+    <ng-container *ngIf="!isLoading">
+
+      <!-- ═══ VUE MOBILE : liste horizontale (meilleure lisibilité) ═══ -->
+      <div *ngIf="products.length > 0" class="sm:hidden flex flex-col gap-2">
+        <article *ngFor="let product of products; trackBy: trackByProductId"
+          class="product-mobile-card relative bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex gap-3 p-3 active:bg-gray-50 transition-colors"
+          [class.cursor-pointer]="!isSeller" (click)="!isSeller && update(product)">
+
+          <div
+            class="w-[4.5rem] h-[4.5rem] flex-shrink-0 rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden relative">
+            <img *ngIf="product.image" [src]="product.image" [alt]="product.name" class="w-full h-full object-contain"
+              loading="lazy" />
+            <mat-icon *ngIf="!product.image" class="text-gray-400">image</mat-icon>
+            <mat-icon *ngIf="hasLowStock(product)"
+              class="absolute -top-0.5 -left-0.5 text-red-500 bg-white rounded-full" matTooltip="Stock faible"
+              style="width:18px;height:18px;font-size:18px;">warning</mat-icon>
+          </div>
+
+          <div class="flex-1 min-w-0 flex flex-col justify-center gap-1 pr-8 relative">
+            <div class="flex items-start gap-1.5 min-w-0">
+              <h3 class="font-semibold text-sm text-gray-900 line-clamp-2 leading-snug flex-1 min-w-0">
+                {{ product.name }}
+              </h3>
+            </div>
+
+            <span *ngIf="product.category.name"
+              class="inline-flex self-start text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full truncate max-w-full">
+              {{ product.category.name }}
+            </span>
+
+            <div class="flex items-center flex-wrap gap-x-3 gap-y-1 mt-0.5">
+              <span class="text-sm font-bold text-primary-600">
+                {{ (getBasePrice(product) ?? 0) | integerSeparator }} Fcfa
+              </span>
+              <div class="flex items-center gap-1">
+                <span class="text-xs text-gray-500">Stock</span>
+                <span class="px-1.5 py-0.5 text-[11px] font-semibold text-white rounded-full"
+                  [ngClass]="hasLowStock(product) ? 'bg-red-500' : 'bg-green-500'">
+                  {{ product.base_unit_quantity | quantityFormat }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <button *ngIf="!isSeller" mat-icon-button type="button" (click)="$event.stopPropagation()"
+            [matMenuTriggerData]="{ customer: product }" [matMenuTriggerFor]="actionsMenu"
+            class="!absolute top-2 right-1 product-menu-btn" aria-label="Actions">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+        </article>
+      </div>
+
+      <!-- ═══ VUE TABLETTE / DESKTOP : grille ═══ -->
+      <div *ngIf="products.length > 0" class="product-grid-wrapper hidden sm:block w-full min-w-0">
+        <div class="product-grid grid w-full grid-cols-4 md:grid-cols-6 lg:grid-cols-10 gap-1.5 sm:gap-2">
+          <article *ngFor="let product of products; trackBy: trackByProductId"
+            class="product-grid-card bg-white rounded-md overflow-hidden shadow-sm border border-primary-200 hover:border-primary-500 transition-all hover:shadow-md flex flex-col"
+            [class.cursor-pointer]="!isSeller" (click)="!isSeller && update(product)">
+
+            <div class="product-grid-card__image bg-gray-50 flex items-center justify-center relative">
+              <img *ngIf="product.image" [src]="product.image" [alt]="product.name" class="w-full h-full object-contain"
+                loading="lazy" />
+              <mat-icon *ngIf="!product.image"
+                class="text-gray-400 product-grid-card__placeholder-icon">image</mat-icon>
+
+              <span *ngIf="product.category.name"
+                class="absolute top-0.5 right-0.5 text-[8px] font-medium bg-gray-800/75 text-white px-1 py-px rounded truncate max-w-[85%] leading-tight">
+                {{ product.category.name }}
+              </span>
+
+              <mat-icon *ngIf="hasLowStock(product)" class="absolute top-0.5 left-0.5 text-red-500 animate-pulse"
+                matTooltip="Stock faible" style="width:14px;height:14px;font-size:14px;">warning</mat-icon>
+            </div>
+
+            <div class="product-grid-card__body relative flex-1 flex flex-col">
+              <h3 class="product-grid-card__title font-medium line-clamp-2 leading-tight pr-5">
+                {{ product.name }}
+              </h3>
+              <span class="product-grid-card__price font-bold text-primary-600">
+                {{ (getBasePrice(product) ?? 0) | integerSeparator }} F
+              </span>
+              <div class="product-grid-card__stock flex items-center gap-0.5">
+                <span class="text-gray-500">Stk</span>
+                <span class="px-1 py-px text-[9px] font-semibold text-white rounded-full"
+                  [ngClass]="hasLowStock(product) ? 'bg-red-500' : 'bg-green-500'">
+                  {{ product.base_unit_quantity | quantityFormat }}
+                </span>
+              </div>
+              <button *ngIf="!isSeller" mat-icon-button type="button" (click)="$event.stopPropagation()"
+                [matMenuTriggerData]="{ customer: product }" [matMenuTriggerFor]="actionsMenu"
+                class="absolute top-0 right-0 product-menu-btn product-menu-btn--compact" aria-label="Actions">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <!-- Aucun produit -->
+      <div *ngIf="products.length === 0"
+        class="card flex-auto flex flex-col items-center justify-center py-10 sm:py-16 px-4 shadow-sm">
+        <img class="h-28 sm:h-48 opacity-80" src="assets/img/illustrations/idea.svg" alt="" />
+        <h2 class="text-lg sm:text-2xl mt-4 mb-2 text-center font-medium text-gray-800">
+          Aucun produit ne correspond à vos filtres
+        </h2>
+        <p class="text-sm text-gray-500 text-center mb-6 max-w-sm">
+          Modifiez la recherche ou la catégorie, ou réinitialisez les filtres.
+        </p>
+        <button mat-raised-button color="primary" (click)="resetFilters()"
+          class="shadow-md hover:shadow-lg w-full sm:w-auto max-w-xs">
+          Réinitialiser les filtres
+        </button>
+      </div>
+
+      <!-- Pagination -->
+      <mat-paginator *ngIf="products.length > 0" [pageSizeOptions]="meta.pageSizeOptions" [pageSize]="meta.per_page"
+        [pageIndex]="meta.current_page - 1" [length]="meta.total" (page)="pageEvent($event)"
+        class="product-paginator sticky left-0 mt-3 sm:mt-4 bg-white/90 backdrop-blur-sm rounded-lg border border-gray-100">
+      </mat-paginator>
+
+    </ng-container>
+  </div>
+
+  <!-- Menu contextuel -->
+  <mat-menu #actionsMenu="matMenu" xPosition="before" yPosition="below">
+    <ng-template let-customer="customer" matMenuContent>
+      <button mat-menu-item (click)="update(customer)" class="flex items-center min-h-[44px]">
+        <mat-icon color="primary" class="mr-2">edit</mat-icon>
+        <span>Modifier</span>
+      </button>
+      <button mat-menu-item (click)="delete(customer)" class="flex items-center min-h-[44px]">
+        <mat-icon color="warn" class="mr-2">delete</mat-icon>
+        <span>Supprimer</span>
+      </button>
+    </ng-template>
+  </mat-menu>
+
+</div>

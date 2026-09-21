@@ -1,0 +1,179 @@
+<vex-store-header [company]="company" [store]="store" pageSubtitle="Gestion des clients">
+</vex-store-header>
+
+<vex-page-layout>
+  <vex-page-layout-content [class.container]="layoutCtrl.value === 'fullwidth'"
+    [class.px-6]="layoutCtrl.value === 'boxed'" class="-mt-6">
+    <div class="card overflow-auto mt-4">
+      <!-- Header pour desktop/tablette -->
+      <div class="bg-app-bar px-6 h-16 border-b sticky left-0 hidden md:flex items-center">
+        <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l flex-none">
+          <span>Liste des clients</span>
+        </h2>
+
+        <mat-form-field subscriptSizing="dynamic" class="w-full max-w-lg">
+          <mat-icon matIconPrefix>search</mat-icon>
+          <input matInput [formControl]="searchCtrl" placeholder="Recherchez ici..." type="text" />
+        </mat-form-field>
+        <span class="flex-1"></span>
+
+        <button [matMenuTriggerFor]="columnFilterMenu" class="ml-4 flex-none" mat-icon-button
+          matTooltip="Filtrer les colonnes" type="button">
+          <mat-icon>filter_list</mat-icon>
+        </button>
+
+        <button (click)="add()" class="ml-4 flex-none" color="primary" mat-mini-fab matTooltip="Ajouter Client"
+          type="button">
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+
+      <!-- Header pour mobile -->
+      <div class="bg-app-bar px-4 py-3 border-b sticky left-0 md:hidden">
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h2 class="title my-0 text-base">Liste des clients</h2>
+            <div class="flex items-center gap-2">
+              <button [matMenuTriggerFor]="columnFilterMenu" mat-icon-button type="button">
+                <mat-icon>filter_list</mat-icon>
+              </button>
+              <button (click)="add()" color="primary" mat-mini-fab type="button">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <mat-form-field subscriptSizing="dynamic" class="w-full">
+            <mat-icon matIconPrefix>search</mat-icon>
+            <input matInput [formControl]="searchCtrl" placeholder="Rechercher..." type="text" />
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Vue mobile avec cards -->
+      <div class="md:hidden">
+        <div *ngIf="customers.length === 0" class="flex-auto flex flex-col items-center justify-center py-12">
+          <img class="h-48" src="assets/img/illustrations/idea.svg" />
+          <h2 class="headline mt-4 text-center px-4">
+            <span>Aucun client ne correspond à vos filtres</span>
+          </h2>
+        </div>
+
+        <div *ngIf="customers.length > 0" class="flex flex-col gap-3 p-4">
+          <div *ngFor="let customer of customers" class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+            <!-- En-tête de la card -->
+            <div class="flex items-start justify-between mb-3 pb-3 border-b border-gray-100">
+              <div class="flex items-center gap-3 flex-1">
+                <div
+                  class="rounded-full h-12 w-12 flex items-center justify-center text-primary-600 bg-primary-600/10 flex-shrink-0">
+                  <mat-icon>person</mat-icon>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-bold text-base text-gray-900 truncate">{{ customer.name }}</div>
+                  <div class="text-sm text-gray-600 mt-0.5 truncate">{{ customer.email }}</div>
+                </div>
+              </div>
+              <button mat-icon-button type="button" [matMenuTriggerData]="{ customer: customer }"
+                [matMenuTriggerFor]="actionsMenu" class="flex-shrink-0">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+            </div>
+
+            <!-- Informations principales -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600 flex items-center gap-1">
+                  <mat-icon class="!w-4 !h-4 !text-base">phone</mat-icon>
+                  Téléphone
+                </span>
+                <span class="font-medium">{{ customer.phone }}</span>
+              </div>
+              <div class="flex items-center justify-between text-sm" *ngIf="customer.address">
+                <span class="text-gray-600 flex items-center gap-1">
+                  <mat-icon class="!w-4 !h-4 !text-base">location_on</mat-icon>
+                  Adresse
+                </span>
+                <span class="font-medium truncate ml-2">{{ customer.address }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vue desktop/tablette avec table -->
+      <table [dataSource]="dataSource" class="w-full hidden md:table" mat-table matSort>
+        <ng-container matColumnDef="icon">
+          <th *matHeaderCellDef mat-header-cell class="uppercase font-bold">Image</th>
+          <td *matCellDef="let row" class="w-8 min-w-8 items-center justify-center" mat-cell>
+            <div class="rounded-full h-9 w-9 flex items-center justify-center text-primary-600 bg-primary-600/10">
+              <mat-icon>person</mat-icon>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container *ngFor="let column of columns">
+          <ng-container [matColumnDef]="column.property" *ngIf="column.type === 'text'">
+            <th mat-header-cell *matHeaderCellDef class="uppercase" mat-sort-header>
+              {{ column.label }}
+            </th>
+            <td mat-cell *matCellDef="let row" [ngClass]="column.cssClasses">
+              <ng-container [ngSwitch]="column.property">
+                <ng-container *ngSwitchDefault>
+                  {{ row[column.property] }}
+                </ng-container>
+
+              </ng-container>
+            </td>
+          </ng-container>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="uppercase">Actions</th>
+          <td mat-cell *matCellDef="let row" class="text-secondary w-10">
+            <button mat-icon-button type="button" (click)="$event.stopPropagation()"
+              [matMenuTriggerData]="{ customer: row }" [matMenuTriggerFor]="actionsMenu">
+              <mat-icon>more_horiz</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="visibleColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: visibleColumns"></tr>
+      </table>
+
+      <!-- Empty state pour desktop/tablette -->
+      <div *ngIf="customers.length === 0" class="hidden md:flex flex-auto flex-col items-center justify-center py-12">
+        <img class="h-64" src="assets/img/illustrations/idea.svg" />
+        <h2 class="headline mt-4 mb-6 text-center">
+          <span>Aucun client ne correspond à vos filtres</span>
+        </h2>
+      </div>
+
+      <mat-paginator *ngIf="customers.length > 0" [pageSizeOptions]="meta.pageSizeOptions" [pageSize]="meta.per_page"
+        [pageIndex]="meta.current_page - 1" [length]="meta.total" (page)="pageEvent($event)" class="sticky left-0">
+      </mat-paginator>
+
+    </div>
+  </vex-page-layout-content>
+</vex-page-layout>
+
+<mat-menu #columnFilterMenu="matMenu" xPosition="before" yPosition="below">
+  <button (click)="toggleColumnVisibility(column, $event)" *ngFor="let column of columns" class="mat-menu-item block">
+    <mat-checkbox (click)="$event.stopPropagation()" [(ngModel)]="column.visible" color="primary">
+      {{ column.label }}
+    </mat-checkbox>
+  </button>
+</mat-menu>
+
+<mat-menu #actionsMenu="matMenu" xPosition="before" yPosition="below">
+  <ng-template let-customer="customer" matMenuContent>
+    <button (click)="update(customer)" mat-menu-item>
+      <mat-icon color="primary">edit</mat-icon>
+      <span>Modifier</span>
+    </button>
+    <button (click)="delete(customer)" mat-menu-item>
+      <mat-icon color="warn">delete</mat-icon>
+      <span>Supprimer</span>
+    </button>
+  </ng-template>
+</mat-menu>

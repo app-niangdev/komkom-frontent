@@ -1,0 +1,265 @@
+// ─────────────────────────────────────────────────────────────
+// StoreHeaderComponent — styles responsive (mobile/tablet/desktop)
+// ─────────────────────────────────────────────────────────────
+
+$breakpoint-sm:  480px;
+$breakpoint-md:  768px;
+$breakpoint-lg: 1024px;
+
+// Hauteur du logo selon breakpoint
+$logo-size-mobile:  44px;
+$logo-size-tablet:  56px;
+$logo-size-desktop: 68px;
+
+.store-header {
+  width: 100%;
+  background: var(--background-foreground-color, #ffffff);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  // ─── Bande supérieure ───────────────────────────────────────
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px;
+
+    @media (min-width: $breakpoint-md) {
+      padding: 12px 24px;
+    }
+
+    @media (min-width: $breakpoint-lg) {
+      padding: 14px 32px;
+    }
+  }
+
+  // ─── Logo + texte ───────────────────────────────────────────
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  &__logo {
+    flex-shrink: 0;
+    width: $logo-size-mobile;
+    height: $logo-size-mobile;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(0, 0, 0, 0.07);
+
+    @media (min-width: $breakpoint-md) {
+      width: $logo-size-tablet;
+      height: $logo-size-tablet;
+      border-radius: 12px;
+    }
+
+    @media (min-width: $breakpoint-lg) {
+      width: $logo-size-desktop;
+      height: $logo-size-desktop;
+    }
+  }
+
+  &__logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &__logo-fallback {
+    width: 80%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  &__brand-text {
+    min-width: 0;
+    flex: 1;
+  }
+
+  &__company-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-text, #1f2937);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    @media (min-width: $breakpoint-md) {
+      font-size: 18px;
+    }
+
+    @media (min-width: $breakpoint-lg) {
+      font-size: 20px;
+    }
+  }
+
+  &__subtitle {
+    font-size: 11px;
+    color: #9ca3af;
+    margin: 3px 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    @media (min-width: $breakpoint-md) {
+      font-size: 12px;
+    }
+  }
+
+  // ─── Actions (droite) ───────────────────────────────────────
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  // Bouton collapse visible uniquement sur mobile/tablette
+  &__collapse-btn {
+    display: flex;
+    color: #6366f1 !important;
+
+    mat-icon {
+      transition: transform 0.2s ease;
+    }
+
+    @media (min-width: $breakpoint-lg) {
+      display: none;
+    }
+  }
+
+  &__back-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  // Masquer le texte "Retour" sur très petit écran
+  &__back-label {
+    display: none;
+
+    @media (min-width: $breakpoint-sm) {
+      display: inline;
+    }
+  }
+
+  // ─── Bande boutique (store bar) ─────────────────────────────
+  &__store-bar {
+    display: flex;
+    flex-direction: column;       // Mobile : colonne
+    gap: 6px;
+    padding: 10px 16px 12px;
+    background: #f9fafb;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    animation: slideDown 0.18s ease;
+
+    @media (min-width: $breakpoint-sm) {
+      flex-direction: row;          // Tablette et + : ligne
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0;
+      padding: 8px 24px;
+    }
+
+    @media (min-width: $breakpoint-lg) {
+      padding: 8px 32px;
+      flex-wrap: nowrap;
+      justify-content: center;
+    }
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  // Quand collapsed : le bouton pulse légèrement pour attirer l'attention
+  &.collapsed &__collapse-btn {
+    background: rgba(99, 102, 241, 0.06) !important;
+
+    mat-icon {
+      animation: pulse 2s ease-in-out infinite;
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.15); }
+  }
+
+  // ─── Chaque item dans la bande boutique ─────────────────────
+  &__store-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    padding: 3px 0;
+
+    // Séparateur vertical entre items sur tablette+
+    @media (min-width: $breakpoint-sm) {
+      padding: 2px 16px;
+
+      &:not(:last-child) {
+        border-right: 1px solid rgba(0, 0, 0, 0.12);
+      }
+
+      &:first-child {
+        padding-left: 0;
+      }
+    }
+
+    @media (min-width: $breakpoint-lg) {
+      padding: 2px 20px;
+    }
+  }
+
+  &__store-icon {
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+    flex-shrink: 0;
+    color: var(--primary-color, #6366f1);
+
+    @media (min-width: $breakpoint-md) {
+      font-size: 20px !important;
+      width: 20px !important;
+      height: 20px !important;
+    }
+  }
+
+  &__store-label {
+    font-size: 12px;
+    color: #374151;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 220px;
+
+    @media (min-width: $breakpoint-md) {
+      font-size: 13px;
+    }
+
+    // Le nom de la boutique est en gras
+    .store-header__store-item--name & {
+      font-weight: 600;
+      color: #1f2937;
+    }
+  }
+
+  // ─── État collapsed (mobile/tablette) ───────────────────────
+  &.collapsed {
+    .store-header__store-bar {
+      display: none;
+    }
+  }
+}

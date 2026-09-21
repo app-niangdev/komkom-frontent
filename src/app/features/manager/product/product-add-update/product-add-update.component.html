@@ -1,0 +1,248 @@
+<div>
+  <form (ngSubmit)="save()" [formGroup]="form" class="product-form">
+    <!-- Header -->
+    <div
+      class="flex items-center justify-between w-full px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg"
+      mat-dialog-title>
+      <h2 *ngIf="form.get('name')?.value"
+        class="text-base sm:text-lg md:text-xl font-bold m-0 flex-auto text-indigo-800 truncate">
+        {{ form.get('name')?.value}}
+      </h2>
+      <h2 *ngIf="!form.get('name')?.value"
+        class="text-base sm:text-lg md:text-xl font-bold m-0 flex-auto text-indigo-800">
+        {{title}}
+      </h2>
+
+      <button class="text-gray-500 hover:text-indigo-700 transition-colors -mr-2" mat-dialog-close mat-icon-button
+        type="button">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <mat-dialog-content class="p-3 sm:p-4 md:p-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+        <!-- Section gauche: Informations du produit -->
+        <div class="space-y-3 sm:space-y-4">
+          <!-- Nom du produit -->
+          <mat-form-field class="w-full mt-4" appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Nom du produit</mat-label>
+            <input formControlName="name" matInput type="text" placeholder="Nom du produit" />
+            <mat-icon matIconPrefix class="text-indigo-500">inventory_2</mat-icon>
+            <mat-error *ngIf="form.get('name')?.hasError('required')">
+              Nom requis
+            </mat-error>
+            <mat-error *ngIf="form.get('name')?.hasError('maxlength')">
+              Max 255 caractères
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Catégorie -->
+          <mat-form-field class="w-full" appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Catégorie</mat-label>
+            <mat-select formControlName="category_id">
+              <mat-option *ngFor="let category of categories" [value]="category.id">
+                {{category.name}}
+              </mat-option>
+            </mat-select>
+            <mat-icon matIconPrefix class="text-indigo-500">category</mat-icon>
+            <mat-error *ngIf="form.get('category_id')?.hasError('required')">
+              Catégorie requise
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Description -->
+          <mat-form-field class="w-full" appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Description</mat-label>
+            <textarea formControlName="description" matInput rows="2" placeholder="Description"></textarea>
+            <mat-error *ngIf="form.get('description')?.hasError('maxlength')">
+              Max 500 caractères
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Seuil d'alerte -->
+          <mat-form-field class="w-full" appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Seuil d'alerte</mat-label>
+            <input type="number" formControlName="alert_threshold" matInput min="0" placeholder="0" />
+            <mat-icon matIconPrefix class="text-indigo-500">notifications_active</mat-icon>
+            <mat-hint class="text-xs">Quantité min. avant alerte</mat-hint>
+            <mat-error *ngIf="form.get('alert_threshold')?.hasError('min')">
+              Doit être positif ou nul
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Prix unitaire (mode sans mesures) -->
+          <mat-form-field *ngIf="!usesMeasurements" class="w-full" appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Prix unitaire</mat-label>
+            <input type="number" formControlName="unit_price" matInput min="0" step="0.01" placeholder="0" />
+            <mat-icon matIconPrefix class="text-indigo-500">attach_money</mat-icon>
+            <span matSuffix class="text-xs text-indigo-600">FCFA</span>
+            <mat-error *ngIf="form.get('unit_price')?.hasError('min')">
+              Doit être positif ou nul
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Numéro de série requis -->
+          <div class="bg-red-50 border border-red-200 rounded-lg p-2 sm:p-3">
+            <h5 class="mb-1.5 text-xs sm:text-sm text-red-700 font-semibold flex items-center">
+              <mat-icon class="mr-1.5 text-red-600" style="width: 18px; height: 18px;">warning</mat-icon>
+              Numéro de série UNIQUE ?
+            </h5>
+            <mat-radio-group aria-label="Numéro de série requis" formControlName="require_serial_number"
+              class="flex gap-3 sm:gap-4">
+              <mat-radio-button color="primary" [value]="true" class="text-sm">Oui</mat-radio-button>
+              <mat-radio-button color="primary" [value]="false" class="text-sm">Non</mat-radio-button>
+            </mat-radio-group>
+          </div>
+        </div>
+
+        <!-- Section droite: Image du produit -->
+        <div class="col-span-1">
+          <vex-upload-file [defaultImageUrl]="imagePreview" [defaultImageName]="'Image du produit'"
+            (fileUploaded)="onFileUpload($event)" (urlProvided)="onImageUrlProvided($event)"
+            (fileRemoved)="onFileRemove()">
+          </vex-upload-file>
+        </div>
+      </div>
+
+      <!-- Section des unités de mesure -->
+      <div *ngIf="usesMeasurements; else noMeasurementMode" class="mt-4 sm:mt-6">
+        <div class="flex items-center justify-between mb-3 sm:mb-4">
+          <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-800 flex items-center">
+            <mat-icon class="mr-1.5 sm:mr-2 text-indigo-600" style="width: 20px; height: 20px;">straighten</mat-icon>
+            Unités de mesure
+          </h3>
+          <button type="button" mat-mini-fab color="primary" (click)="addUnit()"
+            class="shadow-md hover:shadow-lg transition scale-90 sm:scale-100">
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+
+        <!-- Messages d'erreur globaux -->
+        <div *ngIf="hasNoBaseUnit() && form.touched"
+          class="bg-red-50 border border-red-300 text-red-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded mb-2 sm:mb-3 text-xs sm:text-sm flex items-center">
+          <mat-icon class="mr-1.5 sm:mr-2" style="width: 18px; height: 18px;">error</mat-icon>
+          Sélectionner une unité de base
+        </div>
+
+        <div *ngIf="hasDuplicateUnitNames() && form.touched"
+          class="bg-orange-50 border border-orange-300 text-orange-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded mb-2 sm:mb-3 text-xs sm:text-sm flex items-center">
+          <mat-icon class="mr-1.5 sm:mr-2" style="width: 18px; height: 18px;">warning</mat-icon>
+          Noms des unités doivent être uniques
+        </div>
+
+        <!-- Liste des unités -->
+        <div formArrayName="unit_of_measures" class="space-y-3 sm:space-y-4">
+          <div *ngFor="let unit of unitOfMeasures.controls; let i = index" [formGroupName]="i"
+            class="bg-white border-2 rounded-lg p-2 sm:p-3 shadow-sm hover:shadow-md transition"
+            [class.border-indigo-500]="unit.get('is_base_unit')?.value"
+            [class.border-gray-200]="!unit.get('is_base_unit')?.value">
+
+            <div class="flex items-center justify-between mb-2 sm:mb-3">
+              <div class="flex items-center gap-1.5 sm:gap-2">
+                <mat-icon *ngIf="unit.get('is_base_unit')?.value" class="text-indigo-600"
+                  style="width: 18px; height: 18px;">star</mat-icon>
+                <span class="text-xs sm:text-sm font-semibold text-gray-600">
+                  Unité {{ i + 1 }}
+                  <span *ngIf="unit.get('is_base_unit')?.value" class="text-indigo-600">(Base)</span>
+                </span>
+              </div>
+
+              <div class="flex gap-1">
+                <button type="button" mat-icon-button color="primary" (click)="setBaseUnit(i)"
+                  [disabled]="unit.get('is_base_unit')?.value" [matTooltip]="'Définir comme base'"
+                  class="scale-90 sm:scale-100">
+                  <mat-icon>star_border</mat-icon>
+                </button>
+                <button type="button" mat-icon-button color="warn" (click)="removeUnit(i)"
+                  [disabled]="unit.get('is_base_unit')?.value" [matTooltip]="'Supprimer'" class="scale-90 sm:scale-100">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+              <!-- Nom de l'unité -->
+              <mat-form-field class="w-full !h-12 sm:!h-14" appearance="outline" subscriptSizing="dynamic">
+                <mat-label class="!text-xs">Nom</mat-label>
+                <input formControlName="name" matInput type="text" placeholder="Ex: Pièce, Kg"
+                  class="!text-xs sm:!text-sm !h-7 sm:!h-8" />
+                <mat-error class="!text-[10px]" *ngIf="unit.get('name')?.hasError('required')">
+                  Requis
+                </mat-error>
+                <mat-error class="!text-[10px]" *ngIf="unit.get('name')?.hasError('maxlength')">
+                  Max 50 car.
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Prix -->
+              <mat-form-field class="w-full !h-12 sm:!h-14" appearance="outline" subscriptSizing="dynamic">
+                <mat-label class="!text-xs">Prix</mat-label>
+                <input formControlName="price" matInput type="number" min="0" step="0.01" placeholder="0"
+                  class="!text-xs sm:!text-sm !h-7 sm:!h-8" />
+                <span matSuffix class="text-indigo-600 !text-[10px] sm:!text-xs">FCFA&nbsp;</span>
+                <mat-error class="!text-[10px]" *ngIf="unit.get('price')?.hasError('required')">
+                  Requis
+                </mat-error>
+                <mat-error class="!text-[10px]" *ngIf="unit.get('price')?.hasError('min')">
+                  Doit être positif
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Facteur de conversion -->
+              <mat-form-field class="w-full !h-12 sm:!h-14" appearance="outline" subscriptSizing="dynamic">
+                <mat-label class="!text-xs">Facteur</mat-label>
+                <input formControlName="conversion_factor" matInput type="number" min="0.001" step="0.001"
+                  placeholder="1" class="!text-xs sm:!text-sm !h-7 sm:!h-8" />
+                <mat-hint *ngIf="!unit.get('is_base_unit')?.value" class="!text-[10px]">
+                  Nb d'unités de base
+                </mat-hint>
+                <mat-hint *ngIf="unit.get('is_base_unit')?.value" class="!text-[10px]">
+                  Toujours 1 (base)
+                </mat-hint>
+                <mat-error class="!text-[10px]" *ngIf="unit.get('conversion_factor')?.hasError('required')">
+                  Requis
+                </mat-error>
+                <mat-error class="!text-[10px]" *ngIf="unit.get('conversion_factor')?.hasError('min')">
+                  Min 0.001
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message si aucune unité -->
+        <div *ngIf="unitOfMeasures.length === 0" class="text-center py-6 sm:py-8 text-gray-500">
+          <mat-icon class="text-3xl sm:text-4xl mb-2">info</mat-icon>
+          <p class="text-xs sm:text-sm">Aucune unité définie. Cliquez sur + pour ajouter.</p>
+        </div>
+      </div>
+      <ng-template #noMeasurementMode>
+        <div class="mt-4 sm:mt-6 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+          Cette boutique est configuree sans gestion d'unites de mesure. L'unite par defaut sera appliquee automatiquement.
+        </div>
+      </ng-template>
+    </mat-dialog-content>
+
+    <mat-divider></mat-divider>
+
+    <!-- Actions -->
+    <mat-dialog-actions align="end" class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-gray-50 rounded-b-lg flex gap-2">
+      <button type="button" (click)="close()" mat-stroked-button
+        class="hover:bg-gray-100 transition-colors text-sm sm:text-base">
+        <mat-icon class="mr-1 sm:mr-2 scale-90 sm:scale-100">cancel</mat-icon>
+        <span class="hidden sm:inline">Annuler</span>
+        <span class="sm:hidden">Annuler</span>
+      </button>
+
+      <button [disabled]="form.invalid || isSubmitting || hasNoBaseUnit() || hasDuplicateUnitNames()" type="submit"
+        color="primary" mat-flat-button class="px-4 sm:px-6 hover:shadow-md transition text-sm sm:text-base">
+        <mat-icon *ngIf="isSubmitting" class="m-1 sm:m-2">
+          <mat-spinner diameter="18"></mat-spinner>
+        </mat-icon>
+        <mat-icon *ngIf="!isSubmitting" class="mr-1 sm:mr-2 scale-90 sm:scale-100">{{isUpdateMode ? 'edit' :
+          'save'}}</mat-icon>
+        <span>{{ isUpdateMode ? 'Modifier' : 'Enregistrer' }}</span>
+      </button>
+    </mat-dialog-actions>
+  </form>
+</div>

@@ -1,0 +1,341 @@
+<div class="w-full h-full flex flex-col bg-gray-50">
+  <div class="px-3 sm:px-6 py-4 sm:py-6 bg-primary-600/10 flex-none">
+    <div class="container flex items-center justify-between gap-2 sm:gap-4">
+      <h2 class="display-1 font-bold m-0 flex items-center flex-1 min-w-0">
+        <span
+          class="w-9 h-9 sm:w-12 sm:h-12 rounded-full text-primary-600 mr-2 sm:mr-3 bg-primary-600/10 flex items-center justify-center flex-shrink-0">
+          <mat-icon class="text-xl sm:text-2xl">shopping_cart</mat-icon>
+        </span>
+        <span @fadeInRight class="block text-lg sm:text-2xl truncate">Nouvelle Vente</span>
+      </h2>
+      <div class="flex items-center gap-2">
+        <!-- Bouton panier avec badge -->
+        <button mat-icon-button class="relative" (click)="toggleCart()">
+          <mat-icon class="text-primary-600">shopping_cart</mat-icon>
+          <span *ngIf="selectedItems.length > 0"
+            class="absolute -top-1 -right-1 bg-emerald-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+            {{ selectedItems.length }}
+          </span>
+        </button>
+        <button mat-raised-button color="primary" type="button" (click)="goBack()" class="flex-shrink-0">
+          <mat-icon class="sm:mr-1">arrow_back</mat-icon>
+          <span class="hidden sm:inline">Retour</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+    <div class="flex-1 flex flex-col overflow-hidden p-3 sm:p-4">
+      <div class="mb-3 sm:mb-4">
+        <h3 class="text-base sm:text-lg font-medium mb-2">Informations du client</h3>
+        <div class="flex gap-1.5 sm:gap-2">
+          <button mat-flat-button [color]="saleForm.get('customerType')?.value === 'anonymous' ? 'primary' : ''"
+            class="flex-1 flex flex-col sm:flex-row items-center justify-center py-2 sm:py-3 text-xs sm:text-sm"
+            [ngClass]="{'bg-white': saleForm.get('customerType')?.value !== 'anonymous'}"
+            (click)="saleForm.get('customerType')?.setValue('anonymous')">
+            <mat-icon class="sm:mr-2" style="width: 20px; height: 20px; font-size: 20px;">person_off</mat-icon>
+            <span class="mt-0.5 sm:mt-0">Anonyme</span>
+          </button>
+
+          <button mat-flat-button [color]="saleForm.get('customerType')?.value === 'existing' ? 'primary' : ''"
+            class="flex-1 flex flex-col sm:flex-row items-center justify-center py-2 sm:py-3 text-xs sm:text-sm"
+            [ngClass]="{'bg-white': saleForm.get('customerType')?.value !== 'existing'}"
+            (click)="saleForm.get('customerType')?.setValue('existing')">
+            <mat-icon class="sm:mr-2" style="width: 20px; height: 20px; font-size: 20px;">person</mat-icon>
+            <span class="mt-0.5 sm:mt-0">Existant</span>
+          </button>
+
+          <button mat-flat-button [color]="saleForm.get('customerType')?.value === 'new' ? 'primary' : ''"
+            class="flex-1 flex flex-col sm:flex-row items-center justify-center py-2 sm:py-3 text-xs sm:text-sm"
+            [ngClass]="{'bg-white': saleForm.get('customerType')?.value !== 'new'}"
+            (click)="saleForm.get('customerType')?.setValue('new')">
+            <mat-icon class="sm:mr-2" style="width: 20px; height: 20px; font-size: 20px;">person_add</mat-icon>
+            <span class="mt-0.5 sm:mt-0">Nouveau</span>
+          </button>
+        </div>
+      </div>
+
+      <ng-container *ngIf="saleForm.get('customerType')?.value !== 'anonymous'">
+        <div *ngIf="saleForm.get('customerType')?.value === 'existing'" class="mb-3 sm:mb-4">
+          <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+            <mat-label>Sélectionner un client</mat-label>
+            <input type="text" matInput [formControl]="customerSearchControl" [matAutocomplete]="auto">
+            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayCustomerFn">
+              <mat-option (onSelectionChange)="onCustomerSelected(customer)"
+                *ngFor="let customer of filteredCustomers | async" [value]="customer">
+                {{ customer.name }} - {{ customer.phone }}
+              </mat-option>
+            </mat-autocomplete>
+            <mat-icon matPrefix>person_search</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <div *ngIf="saleForm.get('customerType')?.value === 'new'" class="mb-3 sm:mb-4" [formGroup]="saleForm">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3" formGroupName="newCustomer">
+            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+              <mat-label>Nom du client</mat-label>
+              <input matInput formControlName="name">
+              <mat-icon matPrefix>person</mat-icon>
+              <mat-error *ngIf="saleForm.get('newCustomer.name')?.hasError('required')">
+                Le nom est obligatoire
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+              <mat-label>Téléphone</mat-label>
+              <input matInput formControlName="phone">
+              <mat-icon matPrefix>phone</mat-icon>
+              <mat-error *ngIf="saleForm.get('newCustomer.phone')?.hasError('required')">
+                Le téléphone est obligatoire
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="mb-3 sm:mb-4">
+        <div class="relative">
+          <input type="text" placeholder="Rechercher un produit"
+            class="w-full py-2 sm:py-3 px-3 sm:px-4 pr-9 sm:pr-10 text-sm sm:text-base rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            [formControl]="productSearchCtrl">
+          <button class="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 text-gray-500" mat-icon-button>
+            <mat-icon style="width: 20px; height: 20px; font-size: 20px;">search</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-3 sm:mb-4 -mx-4 sm:mx-0">
+        <div class="overflow-x-auto overflow-y-hidden px-4 sm:px-0">
+          <div class="flex space-x-1.5 sm:space-x-2 pb-2 min-w-max">
+            <button mat-flat-button [color]="selectedCategory === null ? 'primary' : ''"
+              class="rounded-full flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-1 sm:py-2 transition-all duration-200 hover:shadow-md hover:scale-105 border-2"
+              [ngClass]="{
+                'shadow-lg border-primary-600': selectedCategory === null,
+                'bg-white border-primary-500 text-primary-700 hover:bg-primary-50': selectedCategory !== null
+              }" (click)="selectCategory(null)">
+              <mat-icon *ngIf="selectedCategory === null" class="mr-0.5 sm:mr-1"
+                style="width: 16px; height: 16px; font-size: 16px;">check</mat-icon>
+              <span class="font-medium">Tous</span>
+            </button>
+
+            <button *ngFor="let category of categories" mat-flat-button
+              [color]="selectedCategory === category.id ? 'primary' : ''"
+              class="rounded-full flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-1 sm:py-2 transition-all duration-200 hover:shadow-md hover:scale-105 border-2"
+              [ngClass]="{
+                'shadow-lg border-primary-600': selectedCategory === category.id,
+                'bg-white border-primary-500 text-primary-700 hover:bg-primary-50': selectedCategory !== category.id
+              }" (click)="selectCategory(category.id)">
+              <mat-icon *ngIf="selectedCategory === category.id" class="mr-0.5 sm:mr-1"
+                style="width: 16px; height: 16px; font-size: 16px;">check</mat-icon>
+              <span class="font-medium">{{ category.name }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-auto">
+        <div
+          class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
+          <div *ngFor="let product of filteredProducts"
+            class="relative bg-white rounded-lg overflow-hidden shadow-sm border border-primary-300 hover:border-primary-500 cursor-pointer transition-all hover:shadow-md"
+            (click)="openProductDetail(product)">
+            <span class="absolute top-1 right-1 z-10 px-1.5 py-0.5 rounded-full text-[10px] font-semibold text-white shadow"
+              [ngClass]="isStockAboveThreshold(product) ? 'bg-green-500' : 'bg-red-500'">
+              {{ getStockQuantity(product) }}
+            </span>
+            <div class="aspect-square bg-gray-50 flex items-center justify-center p-2">
+              <img [src]="product.image" [alt]="product.name" class="max-h-full max-w-full object-contain">
+            </div>
+            <div class="p-2">
+              <h3 class="font-medium text-xs mb-0.5 line-clamp-2 min-h-[2rem]">{{ product.name }}</h3>
+              <div class="mt-0.5">
+                <span class="text-xs font-bold text-primary-500">
+                  {{ (product.unit_of_measures[0].price || 0) | integerSeparator }} Fcfa
+                </span>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="filteredProducts.length === 0" class="col-span-full text-center py-6 sm:py-8">
+            <mat-icon class="text-gray-400 text-4xl sm:text-6xl">search_off</mat-icon>
+            <p class="text-gray-500 mt-2 text-sm sm:text-base">Aucun produit trouvé</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <mat-paginator *ngIf="meta.total > 0" [pageSizeOptions]="meta.pageSizeOptions" [pageSize]="meta.per_page"
+          [pageIndex]="meta.current_page - 1" [length]="meta.total" (page)="pageEvent($event)" class="sticky left-0">
+        </mat-paginator>
+      </div>
+    </div>
+
+    <!-- Panier flottant -->
+    <div *ngIf="isCartOpen" class="fixed inset-0 z-50 lg:static lg:z-auto">
+      <!-- Overlay pour mobile/tablette -->
+      <div class="fixed inset-0 bg-black bg-opacity-50 lg:hidden" (click)="toggleCart()"></div>
+
+      <!-- Conteneur du panier -->
+      <div
+        class="fixed right-0 top-0 bottom-0 w-full sm:w-[400px] lg:w-[400px] xl:w-[450px] bg-white border-t lg:border-t-0 lg:border-l border-gray-200 flex flex-col lg:static">
+        <!-- Header fixe -->
+        <div
+          class="p-3 sm:p-4 lg:p-5 border-b border-gray-200 flex justify-between items-center bg-gray-50 flex-shrink-0">
+          <h2 class="text-lg sm:text-xl font-bold">Panier</h2>
+          <div class="flex items-center gap-2">
+            <div class="bg-emerald-600 text-white rounded-full px-2 sm:px-3 py-1 flex items-center text-xs sm:text-sm">
+              <mat-icon class="mr-0.5 sm:mr-1" style="width: 16px; height: 16px; font-size: 16px;">check</mat-icon>
+              <span>{{ selectedItems.length }} articles</span>
+            </div>
+            <button mat-icon-button (click)="toggleCart()" class="lg:hidden">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Zone principale avec scroll -->
+        <div class="flex-1 p-3 sm:p-4 overflow-y-auto">
+          <ng-container *ngIf="selectedItems.length > 0; else emptyCart">
+            <div>
+              <mat-card *ngFor="let item of selectedItems" class="overflow-hidden shadow-sm mb-1.5 sm:mb-2">
+                <mat-card-content class="p-0">
+                  <div class="flex">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gray-50 relative flex-shrink-0">
+                      <img [src]="item.product.image || 'assets/images/placeholder.png'" [alt]="item.product.name"
+                        class="w-full h-full object-contain p-1.5 sm:p-2">
+                    </div>
+
+                    <div class="flex-1 ml-2 flex flex-col justify-between min-w-0">
+                      <div>
+                        <h3 class="font-medium text-xs sm:text-sm lg:text-base truncate">{{ item.product.name }}</h3>
+                        <p class="text-gray-500 text-xs sm:text-sm">
+                          {{item.unit_price_at_sale | integerSeparator }} FCFA / {{ getUnitName(item) }}
+                        </p>
+                        <p *ngIf="item.base_unit_quantity && item.base_unit_quantity !== item.quantity"
+                          class="text-gray-400 text-xs">
+                          ({{ item.base_unit_quantity | number:'1.0-3' }} {{ item.product.base_unit }})
+                        </p>
+                      </div>
+
+                      <div class="flex justify-between items-center gap-1 sm:gap-2">
+                        <div class="flex items-center border rounded-md">
+                          <button color="primary" mat-icon-button
+                            class="!w-7 !h-7 sm:!w-8 sm:!h-8 !flex !items-center !justify-center"
+                            (click)="updateQuantity(item.product.id, item.quantity - 1)">
+                            <mat-icon class="!w-4 !h-4 !text-base">remove</mat-icon>
+                          </button>
+                          <span class="px-1.5 sm:px-2 text-xs sm:text-sm min-w-[1.5rem] text-center font-semibold">{{
+                            item.quantity }} {{ getUnitName(item) }}</span>
+                          <button color="primary" mat-icon-button
+                            class="!w-7 !h-7 sm:!w-8 sm:!h-8 !flex !items-center !justify-center"
+                            (click)="updateQuantity(item.product.id, item.quantity + 1)">
+                            <mat-icon class="!w-4 !h-4 !text-base">add</mat-icon>
+                          </button>
+                        </div>
+
+                        <span class="font-bold text-xs sm:text-sm truncate">
+                          {{item.unit_price_at_sale * item.quantity | integerSeparator }} FCFA
+                        </span>
+                      </div>
+                    </div>
+
+                    <button color="warn" mat-icon-button class="!w-8 !h-8 sm:!w-10 sm:!h-10 flex-shrink-0"
+                      (click)="removeFromCart(item.product.id)">
+                      <mat-icon style="width: 18px; height: 18px; font-size: 18px;">delete</mat-icon>
+                    </button>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+          </ng-container>
+
+          <!-- Template panier vide -->
+          <ng-template #emptyCart>
+            <div class="flex flex-col items-center justify-center flex-1">
+              <mat-icon class="text-gray-300 text-4xl sm:text-5xl lg:text-6xl mb-2">shopping_cart</mat-icon>
+              <p class="text-gray-500 text-center text-sm sm:text-base">Votre panier est vide</p>
+              <p class="text-gray-400 text-xs sm:text-sm text-center mt-1 sm:mt-2">
+                Ajoutez des produits pour commencer vos achats
+              </p>
+              <button mat-icon-button type="button" (click)="toggleCart()" class="mt-4 border border-gray-300"
+                matTooltip="Quitter le panier" aria-label="Quitter le panier">
+                <mat-icon>arrow_back</mat-icon>
+              </button>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Footer fixe avec total et bouton paiement -->
+        <div class="p-3 sm:p-4 border-t border-gray-200 flex-shrink-0 bg-white">
+          <div class="flex justify-between text-base sm:text-lg font-bold mb-3">
+            <span>Total:</span>
+            <span>{{ getCartTotal() | integerSeparator }} FCFA</span>
+          </div>
+
+          <!-- Encaissement immédiat pour les ventes anonymes -->
+          <div *ngIf="saleForm.get('customerType')?.value === 'anonymous' && selectedItems.length > 0"
+            class="mb-3 space-y-2 sm:space-y-3">
+            <div>
+              <p class="text-xs sm:text-sm font-medium text-gray-600 mb-1.5">Mode de paiement</p>
+              <div class="flex gap-1.5 sm:gap-2">
+                <button *ngFor="let method of paymentMethods" type="button"
+                  (click)="selectPaymentMethod(method)"
+                  class="flex-1 flex flex-col items-center justify-center py-1.5 sm:py-2 rounded-md border text-xs sm:text-sm transition-colors"
+                  [ngClass]="paymentMethod === method.value
+                    ? 'border-primary-600 bg-primary-50 text-primary-700 font-medium'
+                    : 'border-gray-300 bg-white text-gray-600'">
+                  <img [src]="method.image" [alt]="method.label" class="w-6 h-6 sm:w-7 sm:h-7 object-contain mb-0.5 rounded">
+                  <span>{{ method.label }}</span>
+                </button>
+              </div>
+            </div>
+
+            <mat-form-field *ngIf="paymentMethod === 'cash'" appearance="outline" class="w-full"
+              subscriptSizing="dynamic">
+              <mat-label>Montant reçu</mat-label>
+              <input matInput type="number" min="0" [ngModel]="displayedAmountGiven"
+                (ngModelChange)="onAmountGivenChange($event)" [ngModelOptions]="{standalone: true}">
+              <span matSuffix class="mr-2 text-xs text-gray-500">FCFA</span>
+              <mat-error *ngIf="isErrorAmountGivenError">{{ amountGivenError }}</mat-error>
+            </mat-form-field>
+
+            <div *ngIf="paymentMethod === 'cash'" class="flex justify-between text-xs sm:text-sm text-gray-600">
+              <span>Monnaie à rendre :</span>
+              <span class="font-semibold">{{ getChange() | integerSeparator }} FCFA</span>
+            </div>
+          </div>
+
+          <!-- Bouton Finaliser / Encaisser -->
+          <button mat-flat-button color="primary"
+            class="w-full !py-2.5 !sm:py-3 flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-300 !text-sm sm:!text-base"
+            [disabled]="!isPayButtonEnabled() || isSubmitting" (click)="finalizePayment()">
+            <mat-icon *ngIf="!isSubmitting" class="mr-1 sm:mr-2"
+              style="width: 18px; height: 18px; font-size: 18px;">check_circle</mat-icon>
+            <mat-spinner *ngIf="isSubmitting" diameter="18" class="mr-2"></mat-spinner>
+            <span *ngIf="selectedItems.length > 0 && !isSubmitting">
+              {{ saleForm.get('customerType')?.value === 'anonymous' ? 'Encaisser' : 'Finaliser' }}
+            </span>
+            <span *ngIf="selectedItems.length === 0 && !isSubmitting">
+              Panier vide
+            </span>
+            <span *ngIf="isSubmitting">
+              Traitement...
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showSuccess" class="fixed inset-0 bg-white z-50 flex items-center justify-center p-4">
+  <div class="text-center">
+    <mat-icon class="text-green-500 text-5xl sm:text-6xl lg:text-7xl">check_circle</mat-icon>
+    <h2 class="text-xl sm:text-2xl font-bold mt-3 sm:mt-4">Vente réalisée avec succès!</h2>
+    <p class="text-gray-600 mt-1.5 sm:mt-2 text-sm sm:text-base">Redirection en cours...</p>
+    <button mat-flat-button color="primary" class="mt-3 sm:mt-4 text-sm sm:text-base" (click)="goBack()">
+      <mat-icon class="mr-1.5 sm:mr-2" style="width: 20px; height: 20px; font-size: 20px;">dashboard</mat-icon>
+      Retour au tableau de bord
+    </button>
+  </div>
+</div>

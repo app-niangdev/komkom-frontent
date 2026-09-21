@@ -1,0 +1,101 @@
+// Variables SCSS pour les couleurs et transitions
+$primary-color: var(--primary-500);
+$secondary-color: var(--secondary-500);
+$success-color: #22c55e;
+$warning-color: #f59e0b;
+$danger-color: #ef4444;
+$transition-base: all 0.2s ease-in-out;
+
+// Styles pour les cartes de produits
+.card {
+  @apply bg-white dark:bg-gray-800 rounded-lg;
+  transition: $transition-base;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+// Styles pour les badges de stock
+.stock-badge {
+  &.success {
+    background-color: $success-color;
+  }
+
+  &.warning {
+    background-color: $warning-color;
+  }
+
+  &.danger {
+    background-color: $danger-color;
+  }
+}
+
+// Amélioration des inputs et boutons
+mat-form-field {
+  .mat-mdc-form-field-flex {
+    @apply rounded-md;
+  }
+}
+
+button[mat-raised-button] {
+  @apply font-medium;
+  transition: $transition-base;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+// Styles pour la barre de recherche
+.search-input {
+  @apply bg-white dark:bg-gray-800 shadow-lg;
+  transition: $transition-base;
+
+  &:focus-within {
+    @apply shadow-xl;
+    transform: translateY(-1px);
+  }
+}
+
+// Styles pour les images de produits
+.product-image-container {
+  position: relative;
+  overflow: hidden;
+
+  img {
+    transition: transform 0.3s ease;
+  }
+
+  &:hover img {
+    transform: scale(1.05);
+  }
+}
+
+// Styles pour la pagination
+mat-paginator {
+  @apply bg-white dark:bg-gray-800 rounded-lg;
+}
+
+// Media queries pour la responsivité
+@media (max-width: 640px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .card {
+    margin-bottom: 1rem;
+  }
+}
+
+// Animation pour les éléments qui apparaissent
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+

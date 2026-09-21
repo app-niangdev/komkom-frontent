@@ -1,0 +1,80 @@
+// Styles pour le modal de produit de vente
+
+.sale-product-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 16px 16px 0 16px;
+
+  h2 {
+    min-width: 0;
+  }
+
+  .truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.sale-product-modal-close {
+  display: none;
+  flex-shrink: 0;
+}
+
+.sale-product-modal-content {
+  max-height: 65vh;
+}
+
+.sale-product-modal-image {
+  height: 8rem;
+  width: 8rem;
+}
+
+.sale-product-modal-actions {
+  .sale-product-modal-action-btn {
+    min-width: 96px;
+  }
+}
+
+@media (max-width: 599px) {
+  .sale-product-modal-header {
+    padding: 12px 8px 0 12px;
+
+    h2 {
+      font-size: 1.05rem;
+    }
+  }
+
+  .sale-product-modal-close {
+    display: inline-flex;
+  }
+
+  .sale-product-modal-content {
+    flex: 1 1 auto;
+    max-height: none;
+    padding-bottom: 12px;
+  }
+
+  .sale-product-modal-image {
+    height: 6rem;
+    width: 6rem;
+  }
+
+  .sale-product-modal-actions {
+    position: sticky;
+    bottom: 0;
+    background: inherit;
+    padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+    margin: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    gap: 8px;
+
+    .sale-product-modal-action-btn {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+  }
+}

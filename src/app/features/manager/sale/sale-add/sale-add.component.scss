@@ -1,0 +1,40 @@
+/* Hide scrollbar for category filter on mobile */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Animation pour l'ouverture du panier en mobile */
+@media (max-width: 1023px) {
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  .fixed.right-0.top-0.bottom-0 {
+    animation: slideInRight 0.3s ease-out;
+  }
+}
+
+/* Garantir que le layout du panier utilise toute la hauteur disponible */
+.fixed.right-0.top-0.bottom-0,
+.lg\:static {
+  max-height: 100vh;
+  max-height: 100dvh; /* Pour les navigateurs qui supportent dvh */
+}
+
+/* Limiter la hauteur des cards produits */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

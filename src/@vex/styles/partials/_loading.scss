@@ -1,0 +1,19 @@
+// Transition d'entrée des pages routées (sibling du router-outlet)
+.vex-layout-content,
+vex-root {
+  router-outlet + * {
+    animation: komkom-page-enter 0.45s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+  }
+}
+
+@keyframes komkom-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

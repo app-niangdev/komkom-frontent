@@ -1,0 +1,83 @@
+.invoice-details-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-paid {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-partial {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-unpaid {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.status-cancelled {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.payment-type-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background-color: #e0e7ff;
+  color: #3730a3;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+mat-card {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+mat-card-header {
+  background-color: #f9fafb;
+  padding: 16px;
+  margin: -16px -16px 0 -16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+mat-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+table {
+  width: 100%;
+}
+
+.mat-mdc-header-cell {
+  font-weight: 600;
+  color: #374151;
+}
+
+.mat-mdc-row:hover {
+  background-color: #f9fafb;
+}
+
+.serial-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background-color: #f3f4f6;
+  color: #1f2937;
+  font-size: 12px;
+  font-family: monospace;
+}

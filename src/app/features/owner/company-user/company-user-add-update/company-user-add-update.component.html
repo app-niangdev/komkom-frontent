@@ -1,0 +1,151 @@
+<form (ngSubmit)="save()" [formGroup]="form">
+  <div class="flex items-center" mat-dialog-title>
+    <img *ngIf="userSelected.profile_photo_path" [src]="userSelected.profile_photo_path"
+      class="avatar ltr:mr-5 rtl:ml-5" />
+
+    <h2 class="headline m-0 flex-auto" *ngIf="!isEditMode">
+
+      <span *ngIf="form.get('first_name')?.value  || form.get('last_name')?.value">
+        {{ form.get('first_name')?.value + " " + form.get('last_name')?.value}}
+      </span>
+      <span *ngIf="!form.get('first_name')?.value  && !form.get('last_name')?.value">
+        Ajouter un utilisateur
+      </span>
+    </h2>
+    <h2 class="headline m-0 flex-auto" *ngIf="isEditMode">
+      {{ form.get('first_name')?.value + " " + form.get('last_name')?.value}}
+    </h2>
+
+    <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-divider class="text-border"></mat-divider>
+
+  <mat-dialog-content class="flex flex-col">
+
+    <div class="flex flex-col sm:flex-row">
+      <mat-form-field class="flex-auto">
+        <mat-label>Prénom</mat-label>
+        <input cdkFocusInitial formControlName="first_name" matInput />
+        <mat-icon matIconPrefix>person</mat-icon>
+        <mat-error *ngIf="form.controls['first_name'].errors?.['required']">
+          Le prénom est obligatoire
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="sm:ml-6 flex-auto">
+        <mat-label>Nom</mat-label>
+        <input formControlName="last_name" matInput />
+        <mat-icon matIconPrefix>person</mat-icon>
+        <mat-error *ngIf="form.controls['last_name'].errors?.['required']">
+          Le nom est obligatoire
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+
+    <div class="flex flex-col sm:flex-row">
+      <mat-form-field class="flex-auto">
+        <mat-label>Adresse Email</mat-label>
+        <input formControlName="email" matInput />
+        <mat-icon matIconPrefix>mail</mat-icon>
+        <mat-error *ngIf="form.controls['email'].errors?.['required']">
+          L'email est obligatoire
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="flex flex-col sm:flex-row">
+      <mat-form-field class="flex-auto">
+        <mat-label>Choisir un rôle</mat-label>
+        <mat-select formControlName="role_id" required>
+          <mat-option *ngFor="let role of roles" [value]="role.id">
+            {{roleLabel(role.name)}}
+          </mat-option>
+        </mat-select>
+        <mat-icon matIconPrefix>unfold_more</mat-icon>
+        <mat-error *ngIf="form.controls['role_id'].errors?.['required']">
+          Le rôle est obligatoire
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="sm:ml-6 flex-auto">
+        <mat-label>Adresse</mat-label>
+        <input formControlName="address" matInput />
+        <mat-icon matIconPrefix>location_city</mat-icon>
+        <mat-error *ngIf="form.controls['address'].errors?.['required']">
+          L'adresse est obligatoire
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+
+    <div class="flex flex-col sm:flex-row">
+
+      <mat-form-field class="flex-auto">
+        <mat-label>Genre</mat-label>
+        <mat-select formControlName="gender" placeholder="Selectionner le genre&hellip;" required>
+          <mat-option value="male">Homme</mat-option>
+          <mat-option value="female">Femme</mat-option>
+        </mat-select>
+        <mat-icon matIconPrefix>unfold_more</mat-icon>
+        <mat-error *ngIf="form.controls['gender'].errors?.['required']">
+          Le genre est obligatoire
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="flex flex-col sm:flex-row">
+      <mat-form-field class="flex-auto">
+        <mat-label>Téléphone 1</mat-label>
+        <input formControlName="phone_number_one" matInput required />
+        <mat-icon matIconPrefix>phone</mat-icon>
+        <mat-error *ngIf="form.controls['phone_number_one'].errors?.['required']">
+          Le numéro de tépléphone est obligatoire
+        </mat-error>
+        <mat-error *ngIf="form.controls['phone_number_one'].errors?.['pattern']">
+          Le format est invalide
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="sm:ml-6 flex-auto">
+        <mat-label>Téléphone 2</mat-label>
+        <input formControlName="phone_number_two" matInput />
+        <mat-icon matIconPrefix>phone</mat-icon>
+        <mat-error *ngIf="form.controls['phone_number_two'].errors?.['pattern']">
+          Le format est invalide
+        </mat-error>
+      </mat-form-field>
+    </div>
+    <div class="flex flex-col sm:flex-row">
+
+      <mat-form-field class="flex-auto">
+        <mat-label>Boutique affectée</mat-label>
+        <mat-select formControlName="store_id" placeholder="Selectionner la boutique&hellip;" required>
+          <mat-option *ngFor="let item of stores" [value]="item.id">{{item.name }} - {{ item.address }}</mat-option>
+        </mat-select>
+        <mat-icon matIconPrefix>unfold_more</mat-icon>
+        <mat-error *ngIf="form.controls['store_id'].errors?.['required']">
+          La boutique est obligatoire
+        </mat-error>
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button color="warn" mat-raised-button type="reset" (click)="close()">
+      <mat-icon class="ltr:-ml-1 rtl:-mr-1 ltr:mr-2 rtl:ml-2">cancel</mat-icon>
+      <span>Annuler</span>
+    </button>
+
+    <button [disabled]="form.invalid || isSubmitting" type="submit" color="primary" mat-flat-button (click)="save()"
+      class="ml-4 px-6 hover:shadow-md transition">
+      <mat-icon *ngIf="isSubmitting" class="m-2">
+        <mat-spinner diameter="18"></mat-spinner>
+      </mat-icon>
+      <mat-icon *ngIf="!isSubmitting" class="mr-2">{{isEditMode ? 'edit' : 'save'}}</mat-icon>
+      <span>{{ isEditMode ? 'Modifier' : 'Enregistrer' }}</span>
+    </button>
+  </mat-dialog-actions>
+</form>

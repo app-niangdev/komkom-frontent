@@ -1,0 +1,51 @@
+<div class="w-full h-full bg-pattern flex flex-col items-center justify-center p-4">
+  <div @fadeInUp
+    class="card overflow-hidden w-full sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto border border-primary-500">
+    <div class="p-4 sm:p-6 pb-0 flex flex-col items-center justify-center">
+      <div class="fill-current text-center">
+        <img class="w-36 sm:w-36" src="assets/img/logo/logo.png" />
+      </div>
+    </div>
+
+    <div class="text-center mt-2 sm:mt-4">
+      <h2 class="title m-0 text-xl sm:text-2xl">Vérification requise</h2>
+      <h4 class="body-2 text-secondary m-0 text-sm sm:text-base">
+        {{ maskedEmailInfo }}
+      </h4>
+    </div>
+
+    <div *ngIf="form" [formGroup]="form" class="p-4 sm:p-6 flex flex-col gap-3 sm:gap-4">
+      <mat-form-field class="flex-1">
+        <mat-label>Code de vérification</mat-label>
+        <mat-icon matIconPrefix>lock_clock</mat-icon>
+        <input formControlName="code" matInput required maxlength="6" inputmode="numeric"
+          autocomplete="one-time-code" />
+      </mat-form-field>
+
+      <div *ngIf="form.controls['code'].invalid && form.controls['code'].dirty"
+        class="text-red-500 font-medium text-xs sm:text-sm relative -mt-3">
+        Le code doit comporter 6 chiffres
+      </div>
+
+      <div *ngIf="errorMessage" class="p-4 text-red-800 bg-red-100 border border-red-600 rounded text-center">
+        {{ errorMessage }}
+      </div>
+
+      <button (click)="submit()" color="primary" mat-raised-button type="button"
+        [disabled]="form.invalid || isSubmitting" class="mt-2 sm:mt-4">
+        <mat-icon *ngIf="!isSubmitting" class="mr-1">check_circle</mat-icon>
+        <mat-icon *ngIf="isSubmitting" class="animate-spin m-2">autorenew</mat-icon>
+        VÉRIFIER
+      </button>
+
+      <button (click)="resend()" mat-button type="button" [disabled]="isResending" class="text-secondary">
+        <mat-icon *ngIf="isResending" class="animate-spin mr-1">autorenew</mat-icon>
+        Renvoyer le code
+      </button>
+
+      <a [routerLink]="['/login']" class="caption text-xs sm:text-sm text-center whitespace-nowrap">
+        Retour à la connexion
+      </a>
+    </div>
+  </div>
+</div>

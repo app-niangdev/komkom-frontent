@@ -1,0 +1,108 @@
+<div class="receipt-modal">
+  <!-- Header avec boutons d'action -->
+  <div class="modal-header no-print">
+    <h2 mat-dialog-title class="text-lg font-semibold">Reçu de Caisse</h2>
+    <div class="flex gap-2">
+      <button mat-icon-button (click)="print()" matTooltip="Imprimer">
+        <mat-icon>print</mat-icon>
+      </button>
+      <button mat-icon-button (click)="close()" matTooltip="Fermer">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenu du reçu 58mm -->
+  <div mat-dialog-content class="receipt-content">
+    <div class="receipt-paper">
+      <!-- En-tête de l'entreprise -->
+      <div class="receipt-header">
+        <h1 class="company-name">{{ store.name || 'ENTREPRISE' }}</h1>
+        <p class="company-info">{{ store.address || 'Votre adresse ici' }}</p>
+        <p class="company-info">
+          <span>Tél: {{ store.phone_one || 'Votre téléphone' }}</span>
+          <span *ngIf="store.phone_two"> / {{ store.phone_two }}</span>
+        </p>
+        <div class="divider"></div>
+      </div>
+
+      <!-- Type de document -->
+      <div class="receipt-type">
+        <h2>REÇU DE CAISSE</h2>
+        <p class="receipt-number">N° {{ invoice.invoice_number }}</p>
+        <p class="receipt-date">{{ invoice.date | frenchDate }}</p>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Informations client -->
+      <div class="receipt-section">
+        <h4 class="section-title">CLIENT</h4>
+        <p>
+          <span class="client-name">
+            <span>{{ invoice.customer.name || 'Anonyme'}}</span>
+            <span *ngIf="invoice.customer.phone">&nbsp;-&nbsp;{{ invoice.customer.phone }}</span>
+          </span>
+        </p>
+      </div>
+      <div class="divider"></div>
+
+      <!-- Paiements reçus -->
+      <div class="receipt-section" *ngIf="invoice.payment_receipts.length">
+        <h4 class="section-title">PAIEMENTS REÇUS</h4>
+        <div *ngFor="let payment of invoice.payment_receipts" class="payment-row">
+          <span class="payment-type">{{ getPaymentTypeLabel(payment.payment_type) }}</span>
+          <span class="payment-amount">{{ payment.amount | integerSeparator }} FCFA</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Montants -->
+      <div class="receipt-section">
+        <h4 class="section-title">MONTANT DES PAIEMENTS</h4>
+
+        <div class="amount-row">
+          <span class="amount-label">Montant Total:</span>
+          <span class="amount-value">{{ invoice.amount_total | integerSeparator }} FCFA</span>
+        </div>
+
+        <div class="amount-row highlight">
+          <span class="amount-label">Déja Payé:</span>
+          <span class="amount-value">{{ invoice.amount_paid | integerSeparator }} FCFA</span>
+        </div>
+
+        <div class="amount-row" [ngClass]="invoice.balance > 0 ? 'warning' : 'success'">
+          <span class="amount-label">Montant Restant:</span>
+          <span class="amount-value">{{ invoice.balance | integerSeparator }} FCFA</span>
+        </div>
+
+        <div class="divider-thick"></div>
+
+        <!-- Statut -->
+        <div class="status-section">
+          <span class="status-label">Statut:</span>
+          <span class="status-badge" [ngClass]="{
+            'status-paid': invoice.invoice_status === 'paid',
+            'status-partial': invoice.invoice_status === 'partial',
+            'status-unpaid': invoice.invoice_status === 'no_paid',
+            'status-cancelled': invoice.invoice_status === 'cancelled'
+          }">
+            {{ invoice.invoice_status === 'paid' ? 'Payée' :
+            invoice.invoice_status === 'partial' ? 'Partielle' :
+            invoice.invoice_status === 'no_paid' ? 'Non Payée' : 'Annulée' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Pied de page -->
+      <div class="receipt-footer">
+        <p class="footer-text">Merci pour votre confiance</p>
+        <p class="footer-text">À bientôt !</p>
+        <div class="footer-barcode">***************</div>
+      </div>
+    </div>
+  </div>
+</div>

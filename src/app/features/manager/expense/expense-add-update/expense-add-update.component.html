@@ -1,0 +1,85 @@
+<form (ngSubmit)="save()" [formGroup]="form">
+  <div class="flex items-center" mat-dialog-title>
+    <h2 class="headline m-0 flex-auto" *ngIf="!isEditMode">
+
+      <span *ngIf="form.get('title')?.value">
+        {{ form.get('title')?.value }}
+      </span>
+      <span *ngIf="!form.get('title')?.value ">
+        Nouvelle dépense
+      </span>
+    </h2>
+    <h2 class="headline m-0 flex-auto" *ngIf="isEditMode">
+      {{ form.get('title')?.value }}
+    </h2>
+
+    <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-divider class="text-border"></mat-divider>
+
+  <mat-dialog-content class="flex flex-col">
+    <div class="flex flex-col sm:flex-row">
+      <mat-form-field class="flex-auto">
+        <mat-label>Titre</mat-label>
+        <input cdkFocusInitial formControlName="title" matInput />
+        <mat-icon matIconPrefix>title</mat-icon>
+        <mat-error *ngIf="form.controls['title'].errors?.['required']">
+          Le titre est obligatoire
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="flex flex-col sm:flex-row">
+
+      <mat-form-field class="flex-auto">
+        <mat-label>Description</mat-label>
+        <textarea cdkFocusInitial formControlName="description" matInput rows="4"></textarea>
+        <mat-icon matIconPrefix>textsms</mat-icon>
+        <mat-error *ngIf="form.controls['description'].errors?.['required']">
+          La description est obligatoire
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="flex flex-col sm:flex-row">
+      <mat-form-field class="flex-auto">
+        <mat-label>Montant de la dépense</mat-label>
+        <input formControlName="amount" matInput required />
+        <mat-icon matIconPrefix>money</mat-icon>
+        <mat-error *ngIf="form.controls['amount'].errors?.['pattern']">
+          Le montant est invalide
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+
+    <div class="flex flex-col sm:flex-row">
+      <mat-form-field class="w-full sm:w-auto flex-grow">
+        <mat-label>Date</mat-label>
+        <input formControlName="expense_date" [matDatepicker]="datepickerRef" matInput />
+        <mat-datepicker-toggle [for]="datepickerRef" matIconSuffix></mat-datepicker-toggle>
+        <mat-datepicker #datepickerRef></mat-datepicker>
+        <mat-error>Ce champ est obligatoire</mat-error>
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button color="warn" mat-raised-button type="reset" (click)="close()">
+      <mat-icon class="ltr:-ml-1 rtl:-mr-1 ltr:mr-2 rtl:ml-2">cancel</mat-icon>
+      <span>Annuler</span>
+    </button>
+
+    <button [disabled]="form.invalid || isSubmitting" type="submit" color="primary" mat-flat-button (click)="save()"
+      class="ml-4 px-6 hover:shadow-md transition">
+      <mat-icon *ngIf="isSubmitting" class="m-2">
+        <mat-spinner diameter="18"></mat-spinner>
+      </mat-icon>
+      <mat-icon *ngIf="!isSubmitting" class="mr-2">{{isEditMode ? 'edit' : 'save'}}</mat-icon>
+      <span>{{ isEditMode ? 'Modifier' : 'Enregistrer' }}</span>
+    </button>
+  </mat-dialog-actions>
+</form>

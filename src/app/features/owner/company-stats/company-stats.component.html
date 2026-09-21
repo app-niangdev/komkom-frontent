@@ -1,0 +1,177 @@
+<div class="card p-4">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
+    <!-- Breadcrumb section -->
+    <div class="flex items-center gap-2">
+      <span class="text-xl font-semibold">Tableaux de bord</span>
+      <span class="text-xl font-semibold">|</span>
+      <mat-icon class="text-lg align-middle">home</mat-icon>
+      <span class="text-base">Analyse des données</span>
+    </div>
+
+    <!-- Actions section -->
+    <div class="flex flex-col sm:flex-row sm:items-end gap-2 sm:gap-3">
+      <!-- ↑ items-end au lieu de items-center : aligne tout sur le bas du form-field -->
+
+      <!-- Date de début -->
+      <mat-form-field appearance="outline" class="mat-form-field-sm w-full sm:w-auto">
+        <mat-label>Date de début</mat-label>
+        <input matInput [matDatepicker]="startDatePicker" [formControl]="startDateControl" />
+        <mat-datepicker-toggle matIconSuffix [for]="startDatePicker"></mat-datepicker-toggle>
+        <mat-datepicker #startDatePicker></mat-datepicker>
+      </mat-form-field>
+
+      <!-- Date de fin -->
+      <mat-form-field appearance="outline" class="mat-form-field-sm w-full sm:w-auto">
+        <mat-label>Date de fin (Optionnelle)</mat-label>
+        <input matInput [matDatepicker]="endDatePicker" [formControl]="endDateControl" />
+        <mat-datepicker-toggle matIconSuffix [for]="endDatePicker"></mat-datepicker-toggle>
+        <mat-datepicker #endDatePicker></mat-datepicker>
+      </mat-form-field>
+
+      <!-- Container pour boutons -->
+      <div class="flex items-center gap-2 sm:gap-3 mb-[1.34375em]">
+        <!-- ↑ mb-[1.34375em] : compense exactement l'espace réservé par le mat-label flottant -->
+
+        <!-- Bouton Rechercher -->
+        <button mat-raised-button color="primary" class="flex-1 sm:flex-none" (click)="onSearch()"
+          [disabled]="isLoading">
+          <mat-icon class="mr-1">search</mat-icon>
+          {{ isLoading ? 'Chargement...' : 'Rechercher' }}
+        </button>
+
+        <!-- Bouton Exporter PDF -->
+        <button mat-icon-button matTooltip="Exporter Pdf" color="warn" type="button" (click)="exportToPDF()"
+          [disabled]="isLoading || !reportingData" class="rounded-full text-red-600 bg-red-600/10 flex-shrink-0">
+          <mat-icon>picture_as_pdf</mat-icon>
+        </button>
+
+        <!-- Bouton Exporter Excel -->
+        <button mat-icon-button matTooltip="Exporter Excel" type="button" (click)="exportToExcel()"
+          [disabled]="isLoading || !reportingData" class="rounded-full text-green-600 bg-green-600/10 flex-shrink-0">
+          <mat-icon>table_chart</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Indicateur de chargement -->
+<komkom-page-loader *ngIf="isLoading" message="Chargement des statistiques…"></komkom-page-loader>
+
+<!-- Contenu des données -->
+<div *ngIf="!isLoading">
+  <!-- Indicateur des filtres actifs -->
+  <div *ngIf="startDateControl.value || endDateControl.value"
+    class="card p-3 mb-4 bg-blue-50 border-l-4 border-blue-500">
+    <div class="flex items-center gap-2">
+      <mat-icon class="text-blue-600">filter_list</mat-icon>
+      <span class="font-semibold text-blue-800">Filtres actifs:</span>
+      <span class="text-blue-700">
+        <ng-container *ngIf="startDateControl.value && endDateControl.value">
+          Du {{ startDateControl.value | date:'dd/MM/yyyy' }} au {{ endDateControl.value | date:'dd/MM/yyyy' }}
+        </ng-container>
+        <ng-container *ngIf="startDateControl.value && !endDateControl.value">
+          Le {{ startDateControl.value | date:'dd/MM/yyyy' }}
+        </ng-container>
+      </span>
+      <button mat-icon-button (click)="resetFilters()" matTooltip="Réinitialiser les filtres" class="ml-auto">
+        <mat-icon class="text-blue-600">close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="container-fluid p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4"
+    *ngIf="reportingData">
+    <vex-widget-assistant class="sm:col-span-2"></vex-widget-assistant>
+    <vex-widget-quick-line-chart icon="pageview" iconClass="text-primary-600 bg-primary-600/10"
+      label="Nombre de Fournisseurs" value="{{reportingData.data.getAllStatistics.suppliers}}">
+    </vex-widget-quick-line-chart>
+
+    <vex-widget-quick-line-chart icon="pageview" iconClass="text-primary-600 bg-primary-600/10"
+      label="Nombre de Clients" value="{{reportingData.data.getAllStatistics.customers}}">
+    </vex-widget-quick-line-chart>
+  </div>
+
+  <div class="container-fluid p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4"
+    *ngIf="reportingData">
+
+    <vex-widget-quick-line-chart icon="pageview" iconClass="text-primary-600 bg-primary-600/10"
+      label="Ventes Effectuées" value="{{reportingData.data.getAllStatistics.sales.total_count}}">
+    </vex-widget-quick-line-chart>
+
+    <vex-widget-quick-line-chart icon="pageview" iconClass="text-green-600 bg-green-600/10" label="Déja Payées"
+      value="{{reportingData.data.getAllStatistics.invoices.paid}}">
+    </vex-widget-quick-line-chart>
+
+    <vex-widget-quick-line-chart icon="pageview" iconClass="text-yellow-600 bg-yellow-600/10" label="Partiels"
+      value="{{reportingData.data.getAllStatistics.invoices.partial}}">
+    </vex-widget-quick-line-chart>
+
+    <vex-widget-quick-line-chart icon="pageview" iconClass="text-orange-600 bg-orange-600/10" label="Non Payées"
+      value="{{reportingData.data.getAllStatistics.invoices.no_paid}}">
+    </vex-widget-quick-line-chart>
+
+    <vex-widget-quick-line-chart icon="pageview" iconClass="text-red-600 bg-red-600/10" label="Annulées"
+      value="{{reportingData.data.getAllStatistics.invoices.cancelled}}">
+    </vex-widget-quick-line-chart>
+
+    <vex-widget-large-goal-chart [series]="salesSeries" [storeId]="store?.id" class="sm:col-span-full"
+      total="4,374"></vex-widget-large-goal-chart>
+  </div>
+
+  <!-- Section des montants globaux (affichée uniquement si des filtres sont actifs) -->
+  <div class="container-fluid p-3 sm:p-4"
+    *ngIf="reportingData && reportingData.data.getAllStatistics.amounts && !hideIfSeller">
+    <div class="card p-4">
+      <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+        <mat-icon class="text-primary-600">monetization_on</mat-icon>
+        <span>Résumé des montants</span>
+        <span class="text-sm text-gray-500 font-normal" *ngIf="startDateControl.value || endDateControl.value">
+          (période filtrée)
+        </span>
+      </h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <!-- Chiffre d'Affaires -->
+        <div class="p-4 bg-blue-50 rounded-lg">
+          <div class="text-sm text-blue-600 font-medium mb-1">Chiffre d'Affaires (Fcfa)</div>
+          <div class="text-2xl font-bold text-blue-700">
+            {{ reportingData.data.getAllStatistics.amounts.total_amount | integerSeparator }}
+          </div>
+        </div>
+
+        <!-- Total Encaissé -->
+        <div class="p-4 bg-green-50 rounded-lg">
+          <div class="text-sm text-green-600 font-medium mb-1">Total Encaissé (Fcfa)</div>
+          <div class="text-2xl font-bold text-green-700">
+            {{ reportingData.data.getAllStatistics.amounts.total_paid | integerSeparator }}
+          </div>
+        </div>
+
+        <!-- Créances en Cours -->
+        <div class="p-4 bg-orange-50 rounded-lg">
+          <div class="text-sm text-orange-600 font-medium mb-1">Créances en Cours (Fcfa)</div>
+          <div class="text-2xl font-bold text-orange-700">
+            {{ reportingData.data.getAllStatistics.amounts.total_unpaid | integerSeparator }}
+          </div>
+        </div>
+
+        <!-- Taux de Paiement -->
+        <div class="p-4 bg-purple-50 rounded-lg">
+          <div class="text-sm text-purple-600 font-medium mb-1">Taux de Paiement</div>
+          <div class="text-2xl font-bold text-purple-700">
+            {{ reportingData.data.getAllStatistics.amounts.payment_rate | number:'1.0-2' }}%
+          </div>
+        </div>
+
+        <!-- Valeur du Stock -->
+        <div class="p-4 bg-teal-50 rounded-lg">
+          <div class="text-sm text-teal-600 font-medium mb-1">Valeur du Stock (Fcfa)</div>
+          <div class="text-2xl font-bold text-teal-700">
+            {{ reportingData.data.getAllStatistics.stock_value | integerSeparator }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

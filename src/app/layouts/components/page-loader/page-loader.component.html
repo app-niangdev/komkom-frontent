@@ -1,0 +1,20 @@
+<div
+  class="komkom-loader"
+  [class.komkom-loader--compact]="compact"
+  role="status"
+  [attr.aria-label]="message || 'Chargement en cours'">
+  <div class="komkom-loader__visual">
+    <img
+      class="komkom-loader__logo"
+      src="assets/img/logo/logo.png"
+      alt=""
+      width="72"
+      height="72" />
+    <span class="komkom-loader__ring komkom-loader__ring--outer" aria-hidden="true"></span>
+    <span class="komkom-loader__ring komkom-loader__ring--inner" aria-hidden="true"></span>
+  </div>
+  <p *ngIf="message" class="komkom-loader__message">{{ message }}</p>
+  <span *ngIf="!compact" class="komkom-loader__dots" aria-hidden="true">
+    <span></span><span></span><span></span>
+  </span>
+</div>

@@ -1,0 +1,129 @@
+@import "~simplebar/dist/simplebar.css";
+@import "~highlight.js/styles/androidstudio.css";
+// Vex Core
+@import "./@vex/styles/core";
+@import 'ngx-toastr/toastr';
+
+
+/* Conteneur des boutons */
+.swal2-actions-custom {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 15px !important;
+  margin-top: 20px !important;
+}
+
+/* Bouton Confirmer (Vert) */
+.swal2-confirm-custom {
+  background-color: #28a745 !important; /* Vert */
+  color: white !important;
+  padding: 10px 25px !important;
+  border-radius: 6px !important;
+  border: none !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+}
+
+/* Bouton Annuler (Rouge) */
+.swal2-cancel-custom {
+  background-color: #dc3545 !important; /* Rouge */
+  color: white !important;
+  padding: 10px 25px !important;
+  border-radius: 6px !important;
+  border: none !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+}
+
+/* Popup produit (vente) - vue mobile en plein écran style bottom-sheet */
+@media (max-width: 599px) {
+  .cdk-overlay-pane.sale-product-modal-panel {
+    width: 100% !important;
+    max-width: 100vw !important;
+    height: 100%;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    position: absolute !important;
+    bottom: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .sale-product-modal-panel .mat-mdc-dialog-container {
+    border-radius: 16px 16px 0 0 !important;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .sale-product-modal-panel .mdc-dialog__surface {
+    border-radius: 16px 16px 0 0 !important;
+    display: flex;
+    flex-direction: column;
+    max-height: 100vh;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .sale-product-modal-panel .mat-mdc-dialog-content,
+  .sale-product-modal-panel .mdc-dialog__content {
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .sale-product-modal-panel .mat-mdc-dialog-content * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* Menu de filtres mobile (payment-list) */
+.payment-filters-menu {
+  min-width: 280px !important;
+  max-width: 92vw !important;
+}
+
+/* Snackbar de succès (ex: "Produit ajouté au panier") - vert avec petite animation d'entrée */
+@keyframes success-snackbar-pop {
+  0% {
+    transform: scale(0.9) translateY(6px);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.02) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+.success-snackbar {
+  &.mat-mdc-snack-bar-container .mdc-snackbar__surface {
+    background-color: #43a047 !important;
+    animation: success-snackbar-pop 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .mdc-snackbar__label {
+    color: #fff !important;
+  }
+
+  .mat-mdc-snack-bar-action {
+    color: #fff !important;
+  }
+}
+
+.error-snackbar {
+  &.mat-mdc-snack-bar-container .mdc-snackbar__surface {
+    background-color: #e53935 !important;
+  }
+
+  .mdc-snackbar__label {
+    color: #fff !important;
+  }
+
+  .mat-mdc-snack-bar-action {
+    color: #fff !important;
+  }
+}
+

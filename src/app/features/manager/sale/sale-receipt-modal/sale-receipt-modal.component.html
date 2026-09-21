@@ -1,0 +1,116 @@
+<div class="receipt-modal">
+  <div class="modal-header no-print">
+    <h2 mat-dialog-title class="text-lg font-semibold">Vente</h2>
+    <div class="flex gap-2">
+      <button mat-icon-button (click)="print()" matTooltip="Imprimer">
+        <mat-icon>print</mat-icon>
+      </button>
+      <button mat-icon-button (click)="close()" matTooltip="Fermer">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div mat-dialog-content class="receipt-content">
+    <div class="receipt-paper">
+
+      <div class="receipt-header">
+        <h1 class="company-name">{{ store.name || 'ENTREPRISE' }}</h1>
+        <p class="company-info">{{ store.address || 'Votre adresse ici' }}</p>
+        <p class="company-info">
+          <span>Tél: {{ store.phone_one || 'Votre téléphone' }}</span>
+          <span *ngIf="store.phone_two"> / {{ store.phone_two }}</span>
+        </p>
+      </div>
+
+      <!-- N° & date — collés à l'en-tête -->
+      <div class="receipt-type">
+        <p class="receipt-number">Vente N° {{ saleDetails.sale_number }}</p>
+        <p class="receipt-date">{{ saleDetails.created_at | frenchDate }}</p>
+      </div>
+
+      <div class="divider-thick"></div>
+
+      <!-- Client -->
+      <div class="receipt-section receipt-section--client">
+        <h4 class="section-title">CLIENT</h4>
+        <p class="client-line">
+          <span class="client-name">{{ saleDetails.customer?.name || 'Client Anonyme' }}</span>
+          <span class="client-info" *ngIf="saleDetails.customer?.phone">
+            &nbsp;-&nbsp;{{ saleDetails.customer?.phone }}
+          </span>
+        </p>
+      </div>
+
+      <div class="divider-thick"></div>
+
+      <!-- Produits -->
+      <div class="receipt-section">
+        <h4 class="section-title">PRODUITS</h4>
+        <div style="border-top: 1px dashed #999;"></div>
+
+        <div *ngFor="let item of saleDetails.sale_line_items" class="product-row">
+          <div class="product-line">
+            <span class="product-name">{{ item.product.name }}</span>
+          </div>
+          <div class="product-details">
+            <span class="product-qty">{{ item.quantity }} x {{ item.unit_price | integerSeparator }}</span>
+            <span class="product-subtotal">{{ item.subtotal | integerSeparator }} FCFA</span>
+          </div>
+          <!-- Numéros de série -->
+          <div *ngIf="item.product.require_serial_number && item.serial_numbers.length > 0" class="serial-numbers">
+            <span class="serial-label">IMEI:</span>
+            <div class="serial-list">
+              <span *ngFor="let sn of item.serial_numbers; let last = last" class="serial-item">
+                {{ sn.serial_number }}<span *ngIf="!last">, </span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider-thick"></div>
+
+      <!-- Montants -->
+      <div class="receipt-section">
+        <div class="amount-row highlight">
+          <span class="amount-label">Montant:</span>
+          <span class="amount-value">{{ saleDetails.total_amount | integerSeparator }} FCFA</span>
+        </div>
+
+        <div class="divider-thick"></div>
+
+        <div class="status-section" *ngIf="saleDetails.status === 'confirmed'">
+          <span class="status-label">Statut Paiement:</span>
+          <span class="status-badge" [ngClass]="{
+            'status-paid':    saleDetails.status_payment === 'paid',
+            'status-partial': saleDetails.status_payment === 'partial',
+            'status-unpaid':  saleDetails.status_payment === 'no_paid'
+          }">{{ getPaymentStatusLabel(saleDetails.status_payment) }}</span>
+        </div>
+
+        <div class="status-section">
+          <span class="status-label">Statut Vente:</span>
+          <span class="status-badge" [ngClass]="{
+            'status-paid':      saleDetails.status === 'confirmed',
+            'status-partial':   saleDetails.status === 'pending',
+            'status-cancelled': saleDetails.status === 'cancelled'
+          }">
+            {{ saleDetails.status === 'confirmed' ? 'Confirmée' :
+            saleDetails.status === 'pending' ? 'En Attente' : 'Annulée' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Pied de page -->
+      <div class="receipt-footer">
+        <p class="footer-text">Merci pour votre confiance</p>
+        <p class="footer-text">À bientôt !</p>
+        <div class="footer-barcode">***************</div>
+      </div>
+
+    </div>
+  </div>
+</div>

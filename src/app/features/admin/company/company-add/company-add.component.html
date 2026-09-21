@@ -1,0 +1,197 @@
+<div class="w-full h-full flex flex-col">
+  <div class="px-4 sm:px-6 pt-4 sm:pt-6 pb-6 sm:pb-10 bg-primary-600/10 flex-none">
+    <div class="flex flex-col sm:flex-row items-center container px-0">
+      <button @scaleIn class="sm:hidden text-primary-600 mb-4 sm:mb-0 focus:outline-none" mat-icon-button type="button">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <h2 class="display-1 font-bold m-0 flex items-center w-full max-w-4xs mr-0 sm:mr-6 mb-4">
+        <span @scaleIn
+          class="w-10 h-10 sm:w-12 sm:h-12 rounded-full text-primary-600 ltr:mr-3 sm:ltr:mr-4 rtl:ml-3 sm:rtl:ml-4 bg-primary-600/10 flex items-center justify-center">
+          <mat-icon>add</mat-icon>
+        </span>
+        <span @fadeInRight class="block">
+          {{ isUpdateMode ? "Modifier l'entreprise" : "Créer une entreprise" }}
+        </span>
+      </h2>
+      <button (click)="goBack()" color="primary" mat-raised-button matTooltip="Ajouter Produit" type="button"
+        class="w-full sm:w-auto flex items-center justify-center shadow-md hover:shadow-lg transition-shadow duration-200">
+        <mat-icon class="mr-1">arrow_back</mat-icon>
+        <span>Retour</span>
+      </button>
+    </div>
+  </div>
+
+  <div @stagger class="p-6 container-fluid">
+    <h2 class="title mb-4 flex items-center">
+      <span @scaleIn
+        class="w-10 h-10 rounded-full text-primary-600 mr-3 flex items-center justify-center bg-primary-600/10">
+        <mat-icon class="icon-sm">add</mat-icon>
+      </span>
+      <span @fadeInRight class="block">
+        {{ isUpdateMode ? "Mise à jour de l'entreprise" : "Création d'une nouvelle entreprise" }}
+      </span>
+    </h2>
+
+    <div @fadeInUp class="card overflow-hidden">
+      <mat-horizontal-stepper #stepper="matHorizontalStepper" [linear]="true">
+        <!-- === STEP 1 : PROPRIÉTAIRE === -->
+        <mat-step [stepControl]="userForm">
+          <form [formGroup]="userForm">
+            <ng-template matStepLabel>Propriétaire</ng-template>
+
+            <h2 class="title m-0">Informations du propriétaire</h2>
+            <div class="mt-4 grid sm:grid-cols-2 gap-4">
+
+              <!-- Prénom -->
+              <mat-form-field appearance="outline">
+                <mat-label>Prénom</mat-label>
+                <input matInput formControlName="first_name" placeholder="Entrez le prénom" />
+                <mat-error *ngIf="userForm.get('first_name')?.hasError('required')">
+                  Le prénom est requis
+                </mat-error>
+                <mat-error *ngIf="userForm.get('first_name')?.hasError('maxlength')">
+                  Maximum 100 caractères autorisés
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Nom -->
+              <mat-form-field appearance="outline">
+                <mat-label>Nom</mat-label>
+                <input matInput formControlName="last_name" placeholder="Entrez le nom" />
+                <mat-error *ngIf="userForm.get('last_name')?.hasError('required')">
+                  Le nom est requis
+                </mat-error>
+                <mat-error *ngIf="userForm.get('last_name')?.hasError('maxlength')">
+                  Maximum 100 caractères autorisés
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Email -->
+              <mat-form-field appearance="outline">
+                <mat-label>Email</mat-label>
+                <input matInput type="email" formControlName="email" placeholder="Ex: nom@example.com" />
+                <mat-error *ngIf="userForm.get('email')?.hasError('required')">
+                  L'adresse e-mail est requise
+                </mat-error>
+                <mat-error *ngIf="userForm.get('email')?.hasError('email')">
+                  L'adresse e-mail n'est pas valide
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Genre -->
+              <mat-form-field appearance="outline">
+                <mat-label>Genre</mat-label>
+                <mat-select formControlName="gender">
+                  <mat-option *ngFor="let option of genderOptions" [value]="option.value">
+                    {{ option.label }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="userForm.get('gender')?.hasError('required')">
+                  Le genre est requis
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Téléphone principal -->
+              <mat-form-field appearance="outline">
+                <mat-label>Téléphone principal</mat-label>
+                <input matInput formControlName="phone_number_one" placeholder="Ex: 77 123 45 67" />
+                <mat-error *ngIf="userForm.get('phone_number_one')?.hasError('required')">
+                  Le numéro de téléphone est requis
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Téléphone secondaire -->
+              <mat-form-field appearance="outline">
+                <mat-label>Téléphone secondaire</mat-label>
+                <input matInput formControlName="phone_number_two" placeholder="Optionnel" />
+              </mat-form-field>
+
+              <!-- Adresse -->
+              <mat-form-field appearance="outline" class="sm:col-span-2">
+                <mat-label>Adresse</mat-label>
+                <textarea matInput formControlName="address" placeholder="Adresse complète"></textarea>
+              </mat-form-field>
+            </div>
+
+            <div class="actions flex items-center justify-end gap-2 mt-4">
+              <button color="primary" mat-raised-button matStepperNext [disabled]="userForm.invalid">
+                Suivant
+              </button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- === STEP 2 : ENTREPRISE === -->
+        <mat-step [stepControl]="companyForm">
+          <form [formGroup]="companyForm">
+            <ng-template matStepLabel>Entreprise</ng-template>
+
+            <h2 class="title m-0">Informations sur l'entreprise</h2>
+            <div class="mt-4 grid sm:grid-cols-2 gap-4">
+
+              <!-- Nom -->
+              <mat-form-field appearance="outline">
+                <mat-label>Nom de l'entreprise</mat-label>
+                <input matInput formControlName="name" placeholder="Ex: LEAD Consulting" />
+                <mat-error *ngIf="companyForm.get('name')?.hasError('required')">
+                  Le nom de l'entreprise est requis
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Nom court -->
+              <mat-form-field appearance="outline">
+                <mat-label>Nom court</mat-label>
+                <input matInput formControlName="short_name" placeholder="Ex: LEAD" />
+              </mat-form-field>
+
+              <!-- Slogan -->
+              <mat-form-field appearance="outline" class="sm:col-span-2">
+                <mat-label>Slogan</mat-label>
+                <input matInput formControlName="slogan" placeholder="Votre slogan ici..." />
+              </mat-form-field>
+
+              <!-- Adresse du siège -->
+              <mat-form-field appearance="outline" class="sm:col-span-2">
+                <mat-label>Adresse du siège</mat-label>
+                <textarea matInput formControlName="head_office_address"
+                  placeholder="Adresse complète du siège"></textarea>
+              </mat-form-field>
+
+              <!-- Email entreprise -->
+              <mat-form-field appearance="outline">
+                <mat-label>Email de l'entreprise</mat-label>
+                <input matInput formControlName="email_company" type="email" placeholder="contact@entreprise.com" />
+                <mat-error *ngIf="companyForm.get('email_company')?.hasError('email')">
+                  L'adresse e-mail n'est pas valide
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Téléphone 1 -->
+              <mat-form-field appearance="outline">
+                <mat-label>Téléphone principal</mat-label>
+                <input matInput formControlName="phone_one" placeholder="Ex: 33 123 45 67" />
+                <mat-error *ngIf="companyForm.get('phone_one')?.hasError('required')">
+                  Le téléphone principal est requis
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Téléphone 2 -->
+              <mat-form-field appearance="outline">
+                <mat-label>Téléphone secondaire</mat-label>
+                <input matInput formControlName="phone_two" placeholder="Optionnel" />
+              </mat-form-field>
+            </div>
+
+            <div class="actions flex items-center justify-between gap-2 mt-4">
+              <button color="primary" mat-stroked-button matStepperPrevious>Précédent</button>
+              <button color="primary" mat-raised-button (click)="isUpdateMode ? edit() : save()"
+                [disabled]="isSubmitting || companyForm.invalid || userForm.invalid">
+                {{ isUpdateMode ? 'Mettre à jour' : 'Enregistrer' }}
+              </button>
+            </div>
+          </form>
+        </mat-step>
+      </mat-horizontal-stepper>
+    </div>
+  </div>
+</div>

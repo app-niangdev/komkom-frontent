@@ -1,0 +1,308 @@
+<div class="mt-6 flex flex-col md:flex-row md:items-start" *ngIf="userConnet && !isUpdateMode">
+  <div class="flex-auto">
+    <div class="card">
+      <div class="flex items-start justify-between border-b">
+        <div class="px-6 py-4">
+          <h2 class="title m-0">Informations Personnelles</h2>
+        </div>
+        <div class="flex items-center justify-end gap-1">
+          <button (click)="showForm()" class="m-2 flex-none" color="primary" mat-mini-fab matTooltip="Modifier" type="button">
+            <mat-icon svgIcon="mat:edit"></mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        <div class="py-3 flex items-center">
+          <div @scaleIn
+            class="w-10 h-10 rounded-full bg-primary-600/10 text-primary-600 ltr:mr-3 rtl:ml-3 flex items-center justify-center">
+            <mat-icon class="icon-sm" svgIcon="mat:person"></mat-icon>
+          </div>
+
+          <div @fadeInRight>
+            <p class="m-0 body-1">{{userConnet.user.first_name}}</p>
+            <p class="m-0 caption text-hint">Prénom</p>
+          </div>
+        </div>
+
+        <div class="py-3 flex items-center">
+          <div @scaleIn
+            class="w-10 h-10 rounded-full bg-primary-600/10 text-primary-600 ltr:mr-3 rtl:ml-3 flex items-center justify-center">
+            <mat-icon class="icon-sm" svgIcon="mat:person"></mat-icon>
+          </div>
+
+          <div @fadeInRight>
+            <p class="m-0 body-1">{{userConnet.user.last_name}}</p>
+            <p class="m-0 caption text-hint">Nom</p>
+          </div>
+        </div>
+
+        <div class="py-3 flex items-center">
+          <div @scaleIn
+            class="w-10 h-10 rounded-full bg-primary-600/10 text-primary-600 ltr:mr-3 rtl:ml-3 flex items-center justify-center">
+            <mat-icon class="icon-sm" svgIcon="mat:mail"></mat-icon>
+          </div>
+
+          <div @fadeInRight>
+            <p class="m-0 body-1">{{userConnet.user.email}}</p>
+            <p class="m-0 caption text-hint">Adresse email</p>
+          </div>
+        </div>
+
+        <div class="py-3 flex items-center">
+          <div @scaleIn
+            class="w-10 h-10 rounded-full bg-primary-600/10 text-primary-600 ltr:mr-3 rtl:ml-3 flex items-center justify-center">
+            <mat-icon class="icon-sm" svgIcon="mat:access_time"></mat-icon>
+          </div>
+
+          <div @fadeInRight>
+            <p class="m-0 body-1">{{ translateRoleName(userConnet.user.role.name) }}</p>
+            <p class="m-0 caption text-hint">
+              Role
+            </p>
+          </div>
+        </div>
+
+        <div class="py-2 flex items-start mb-4">
+            <div class="w-10 h-10 rounded-full bg-primary-600/10 text-primary-600 ltr:mr-3 rtl:ml-3 flex items-center justify-center flex-shrink-0">
+              <mat-icon class="icon-sm" svgIcon="mat:info"></mat-icon>
+            </div>
+            <div class="flex-1">
+              <span [class]="userConnet.user.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                class="px-2 py-1 rounded-full text-xs font-semibold">
+                {{ userConnet.user.status ? 'Actif' : 'Inactif' }}
+              </span>
+              <p class="m-0 caption text-hint mt-1">Statut</p>
+            </div>
+        </div>
+
+        <div class="py-3 flex items-center">
+          <div @scaleIn
+            class="w-10 h-10 rounded-full bg-primary-600/10 text-primary-600 ltr:mr-3 rtl:ml-3 flex items-center justify-center">
+            <mat-icon class="icon-sm" svgIcon="mat:access_time"></mat-icon>
+          </div>
+
+          <div @fadeInRight>
+            <p class="m-0 body-1">{{ userConnet.user.gender }}</p>
+            <p class="m-0 caption text-hint">
+              Genre
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div *ngIf="userConnet" class="card max-w-unset md:max-w-xs w-full flex-none md:ltr:ml-6 md:rtl:mr-6 mt-6 md:mt-0">
+    <div class="flex items-start justify-between border-b">
+      <div class="px-6 py-4">
+        <h2 class="title m-0">Contacts</h2>
+      </div>
+    </div>
+
+    <div @stagger class="px-6 py-4 flex flex-col gap-4">
+      <div class="py-3 flex items-center">
+        <div @scaleIn
+          class="w-10 h-10 rounded-full bg-primary-600/10 text-primary-600 ltr:mr-3 rtl:ml-3 flex items-center justify-center">
+          <mat-icon class="icon-sm" svgIcon="mat:location_on"></mat-icon>
+        </div>
+
+        <div @fadeInRight>
+          <p class="m-0 body-1">{{userConnet.user.address }}</p>
+          <p class="m-0 caption text-hint">Adresse</p>
+        </div>
+      </div>
+      <div class="py-3 flex items-center">
+        <div @scaleIn
+          class="w-10 h-10 rounded-full bg-primary-600/10 text-primary-600 ltr:mr-3 rtl:ml-3 flex items-center justify-center">
+          <mat-icon class="icon-sm" svgIcon="mat:phone"></mat-icon>
+        </div>
+
+        <div @fadeInRight>
+          <p class="m-0 body-1">
+            <span>{{userConnet.user.phone_number_one }}</span>
+          </p>
+          <p class="m-0 caption text-hint">Téléphone 1</p>
+        </div>
+      </div>
+      <div class="py-3 flex items-center" *ngIf="userConnet.user.phone_number_two">
+        <div @scaleIn
+          class="w-10 h-10 rounded-full bg-primary-600/10 text-primary-600 ltr:mr-3 rtl:ml-3 flex items-center justify-center">
+          <mat-icon class="icon-sm" svgIcon="mat:phone"></mat-icon>
+        </div>
+
+        <div @fadeInRight>
+          <p class="m-0 body-1">
+            <span>{{userConnet.user.phone_number_two }}</span>
+          </p>
+          <p class="m-0 caption text-hint">Téléphone 2</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="mt-6" *ngIf="userConnet && isUpdateMode">
+  <div class="card p-6">
+
+    <div class="flex items-start justify-between border-b pb-4">
+      <h2 class="title m-0">Mettre à jour les informations personnelles</h2>
+
+      <button (click)="showForm()" class="m-2 flex-none" color="warn"
+              mat-mini-fab matTooltip="Annuler" type="button">
+        <mat-icon svgIcon="mat:cancel"></mat-icon>
+      </button>
+    </div>
+
+    <form [formGroup]="form" class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+
+      <div class="col-span-1">
+        <vex-upload-file
+          [defaultImageUrl]="userConnet.user.image_url"
+          [defaultImageName]="'Photo de profil'"
+          (fileUploaded)="onFileUpload($event)"
+          (fileRemoved)="onFileRemove()">
+        </vex-upload-file>
+
+      </div>
+
+      <!-- COLONNE DROITE : FORM -->
+      <div class="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        <!-- Prénom -->
+        <div class="flex flex-col">
+          <label class="block text-sm font-medium mb-2 text-gray-700">Prénom</label>
+          <div class="relative">
+            <input type="text" formControlName="first_name"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                   placeholder="Entrez le prénom">
+            <mat-icon class="absolute right-3 top-2 text-gray-400" svgIcon="mat:person"></mat-icon>
+          </div>
+          <div *ngIf="form.controls['first_name'].invalid && form.controls['first_name'].touched" class="mt-1">
+            <div *ngIf="form.controls['first_name'].errors?.['required']" class="text-red-600 text-xs">
+              Le prénom est obligatoire
+            </div>
+            <div *ngIf="form.controls['first_name'].errors?.['minlength']" class="text-red-600 text-xs">
+              Minimum 4 caractères
+            </div>
+            <div *ngIf="form.controls['first_name'].errors?.['maxlength']" class="text-red-600 text-xs">
+              Maximum 255 caractères
+            </div>
+          </div>
+        </div>
+
+        <!-- Nom -->
+        <div class="flex flex-col">
+          <label class="block text-sm font-medium mb-2 text-gray-700">Nom</label>
+          <div class="relative">
+            <input type="text" formControlName="last_name"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                   placeholder="Entrez le nom">
+            <mat-icon class="absolute right-3 top-2 text-gray-400" svgIcon="mat:badge"></mat-icon>
+          </div>
+          <div *ngIf="form.controls['last_name'].invalid && form.controls['last_name'].touched" class="mt-1">
+            <div *ngIf="form.controls['last_name'].errors?.['minlength']" class="text-red-600 text-xs">
+              Minimum 2 caractères
+            </div>
+            <div *ngIf="form.controls['last_name'].errors?.['maxlength']" class="text-red-600 text-xs">
+              Maximum 50 caractères
+            </div>
+          </div>
+        </div>
+
+        <!-- Adresse (col-span-full) -->
+        <div class="flex flex-col col-span-full">
+          <label class="block text-sm font-medium mb-2 text-gray-700">Adresse</label>
+          <div class="relative">
+            <input type="text" formControlName="address"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                   placeholder="Entrez l'adresse">
+            <mat-icon class="absolute right-3 top-2 text-gray-400" svgIcon="mat:place"></mat-icon>
+          </div>
+          <div *ngIf="form.controls['address'].invalid && form.controls['address'].touched" class="mt-1">
+            <div *ngIf="form.controls['address'].errors?.['minlength']" class="text-red-600 text-xs">
+              Minimum 2 caractères
+            </div>
+            <div *ngIf="form.controls['address'].errors?.['maxlength']" class="text-red-600 text-xs">
+              Maximum 255 caractères
+            </div>
+          </div>
+        </div>
+
+        <!-- Genre -->
+        <div class="flex flex-col">
+          <label class="block text-sm font-medium mb-2 text-gray-700">Genre</label>
+          <div class="relative">
+            <select formControlName="gender"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <option value="">Sélectionnez</option>
+              <option value="male">Homme</option>
+              <option value="female">Femme</option>
+            </select>
+            <mat-icon class="absolute right-3 top-2 text-gray-400" svgIcon="mat:wc"></mat-icon>
+          </div>
+          <div *ngIf="form.controls['gender'].invalid && form.controls['gender'].touched" class="mt-1">
+            <div *ngIf="form.controls['gender'].errors?.['required']" class="text-red-600 text-xs">
+              Le genre est obligatoire
+            </div>
+          </div>
+        </div>
+
+        <!-- Téléphone principal -->
+        <div class="flex flex-col">
+          <label class="block text-sm font-medium mb-2 text-gray-700">Téléphone principal</label>
+          <div class="relative">
+            <input type="tel" formControlName="phone_number_one"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                   placeholder="Entrez le téléphone principal">
+            <mat-icon class="absolute right-3 top-2 text-gray-400" svgIcon="mat:phone"></mat-icon>
+          </div>
+          <div *ngIf="form.controls['phone_number_one'].invalid && form.controls['phone_number_one'].touched" class="mt-1">
+            <div *ngIf="form.controls['phone_number_one'].errors?.['required']" class="text-red-600 text-xs">
+              Le téléphone principal est obligatoire
+            </div>
+            <div *ngIf="form.controls['phone_number_one'].errors?.['minlength']" class="text-red-600 text-xs">
+              Minimum 9 caractères
+            </div>
+            <div *ngIf="form.controls['phone_number_one'].errors?.['maxlength']" class="text-red-600 text-xs">
+              Maximum 20 caractères
+            </div>
+          </div>
+        </div>
+
+        <!-- Téléphone secondaire -->
+        <div class="flex flex-col">
+          <label class="block text-sm font-medium mb-2 text-gray-700">Téléphone secondaire</label>
+          <div class="relative">
+            <input type="tel" formControlName="phone_number_two"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                   placeholder="Entrez le deuxième téléphone">
+            <mat-icon class="absolute right-3 top-2 text-gray-400" svgIcon="mat:phone"></mat-icon>
+          </div>
+          <div *ngIf="form.controls['phone_number_two'].invalid && form.controls['phone_number_two'].touched" class="mt-1">
+            <div *ngIf="form.controls['phone_number_two'].errors?.['minlength']" class="text-red-600 text-xs">
+              Minimum 9 caractères
+            </div>
+            <div *ngIf="form.controls['phone_number_two'].errors?.['maxlength']" class="text-red-600 text-xs">
+              Maximum 20 caractères
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2">
+                <button [disabled]="form.invalid || isSubmitting" (click)="save()"
+                  color="primary" mat-flat-button type="button">
+                  <mat-icon *ngIf="isSubmitting" class="animate-spin" svgIcon="mat:autorenew"></mat-icon>
+                  <span >{{ isSubmitting ? 'Enregistrement...' : 'Enregistrer' }}</span>
+                </button>
+              </div>
+
+      </div>
+    </form>
+  </div>
+</div>
+
+

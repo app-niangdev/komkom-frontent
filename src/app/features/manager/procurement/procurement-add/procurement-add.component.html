@@ -1,0 +1,409 @@
+<mat-progress-bar *ngIf="!isReady" mode="indeterminate" class="flex-none"></mat-progress-bar>
+
+<div *ngIf="isReady" class="w-full h-full flex flex-col">
+
+  <!-- ══════════════════════════════════════════════════════
+       EN-TÊTE STICKY
+  ═══════════════════════════════════════════════════════ -->
+  <div
+    class="flex-none bg-white border-b shadow-sm px-4 sm:px-6 py-3 flex items-center justify-between gap-4 sticky top-0 z-20">
+
+    <!-- Gauche : icône + titre + store -->
+    <div class="flex items-center gap-3 min-w-0">
+      <div @scaleIn class="w-9 h-9 rounded-lg bg-primary-600/10 flex items-center justify-center flex-shrink-0">
+        <mat-icon class="text-primary-600">local_shipping</mat-icon>
+      </div>
+      <div class="min-w-0">
+        <h1 @fadeInRight class="text-base sm:text-lg font-bold text-gray-800 leading-tight truncate">
+          {{ isUpdateMode ? 'Modifier l\'approvisionnement' : 'Nouvel approvisionnement' }}
+        </h1>
+        <p class="text-xs text-gray-500 truncate">{{ store.name }} - {{ store.address }}</p>
+      </div>
+    </div>
+
+    <!-- Droite : total + boutons -->
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <!-- Total (visible si au moins 1 ligne) -->
+      <div *ngIf="lineItems.length > 0" class="hidden sm:flex flex-col items-end mr-2 border-r pr-3">
+        <span class="text-xs text-gray-500">Total</span>
+        <span class="text-base font-bold text-primary-600">
+          {{ getTotalAmount() | integerSeparator }} FCFA
+        </span>
+      </div>
+
+      <button mat-stroked-button type="button" (click)="goBack()" class="hidden sm:flex items-center gap-1">
+        <mat-icon class="text-sm">arrow_back</mat-icon>
+        <span class="text-sm">Retour</span>
+      </button>
+      <button mat-icon-button type="button" (click)="goBack()" class="sm:hidden">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+
+      <button mat-raised-button color="primary" type="button" (click)="save()"
+        [disabled]="procurementForm.invalid || isSubmitting || lineItems.length === 0"
+        class="!inline-flex !items-center !justify-center gap-1.5 !leading-none">
+        <ng-container *ngIf="!isSubmitting">
+          <mat-icon class="!w-4 !h-4 !text-base leading-none">save</mat-icon>
+          <span class="hidden sm:inline text-sm leading-none">Enregistrer</span>
+        </ng-container>
+        <ng-container *ngIf="isSubmitting">
+          <svg class="w-4 h-4 animate-spin flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+            viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
+          </svg>
+          <span class="hidden sm:inline text-sm leading-none">Enregistrement...</span>
+        </ng-container>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       CORPS : layout 2 colonnes sur grand écran
+  ═══════════════════════════════════════════════════════ -->
+  <div class="flex-auto overflow-auto bg-gray-50">
+    <form [formGroup]="procurementForm" (ngSubmit)="save()"
+      class="h-full flex flex-col lg:flex-row gap-4 p-3 sm:p-4 lg:p-5 lg:items-start">
+
+      <!-- ─────────────────────────────────────────────────
+           PANNEAU GAUCHE : Informations générales (sticky)
+      ───────────────────────────────────────────────── -->
+      <div class="w-full lg:w-72 xl:w-80 flex-shrink-0 flex flex-col gap-3 lg:sticky lg:top-4">
+
+        <!-- Carte fournisseur -->
+        <div class="card rounded-xl shadow-sm overflow-hidden">
+          <div class="px-4 py-3 bg-primary-600/5 border-b flex items-center gap-2">
+            <mat-icon class="text-primary-600 text-base">business</mat-icon>
+            <span class="text-sm font-semibold text-gray-700">Fournisseur</span>
+          </div>
+          <div class="p-4">
+            <mat-form-field class="w-full" appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Sélectionner un fournisseur</mat-label>
+              <mat-select formControlName="supplier_id" required disableOptionCentering
+                (selectionChange)="$event.value === '__search__' && procurementForm.get('supplier_id')?.setValue(null, {emitEvent:false})">
+
+                <!-- Champ de recherche inline — pas de [disabled] pour éviter le grisage -->
+                <mat-option class="!p-0 !min-h-0 search-option-sticky" [value]="'__search__'"
+                  (click)="$event.stopPropagation(); $event.preventDefault()"
+                  style="position:sticky;top:0;z-index:10;background:#fff;pointer-events:none;">
+                  <div class="flex items-center gap-2 px-3 py-2 border-b bg-gray-50" style="pointer-events:all;"
+                    (click)="$event.stopPropagation()">
+                    <mat-icon class="text-gray-400 text-base flex-shrink-0">search</mat-icon>
+                    <input [formControl]="supplierSearchCtrl" placeholder="Rechercher..."
+                      class="border-0 outline-none flex-1 text-sm bg-transparent w-full text-gray-800"
+                      style="opacity:1 !important; color: inherit;" (click)="$event.stopPropagation()"
+                      (keydown)="$event.stopPropagation()" />
+                    <svg *ngIf="isLoadingSuppliers" class="w-4 h-4 animate-spin text-primary-500 flex-shrink-0"
+                      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                      </path>
+                    </svg>
+                  </div>
+                </mat-option>
+
+                <mat-option *ngFor="let supplier of suppliers" [value]="supplier.id">
+                  <div class="flex items-center gap-2 py-0.5">
+                    <div class="w-7 h-7 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                      <span class="text-xs font-bold text-primary-600">
+                        {{ supplier.name.charAt(0).toUpperCase() }}
+                      </span>
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                      <span class="text-sm font-medium truncate">{{ supplier.name }}</span>
+                      <span *ngIf="supplier.phone_one" class="text-xs text-gray-500">{{ supplier.phone_one }}</span>
+                    </div>
+                  </div>
+                </mat-option>
+
+                <mat-option *ngIf="suppliers.length === 0 && !isLoadingSuppliers" disabled>
+                  <span class="text-xs text-gray-400 italic">Aucun fournisseur trouvé</span>
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="procurementForm.get('supplier_id')?.hasError('required')">
+                Champ requis
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Carte récapitulatif (visible sur lg+) -->
+        <div *ngIf="lineItems.length > 0" class="card rounded-xl shadow-sm overflow-hidden hidden lg:block">
+          <div class="px-4 py-3 bg-primary-600/5 border-b flex items-center gap-2">
+            <mat-icon class="text-primary-600 text-base">receipt_long</mat-icon>
+            <span class="text-sm font-semibold text-gray-700">Récapitulatif</span>
+          </div>
+          <div class="p-4 space-y-2">
+            <div *ngFor="let lineItem of lineItems.controls; let i = index"
+              class="flex items-center justify-between gap-2 text-sm py-1.5 border-b border-dashed last:border-0">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span
+                  class="w-5 h-5 rounded-full bg-gray-100 text-gray-500 text-xs flex items-center justify-center flex-shrink-0 font-medium">
+                  {{ i + 1 }}
+                </span>
+                <span class="truncate text-gray-700 text-xs">{{ getProductName(i) }}</span>
+              </div>
+              <span class="font-semibold text-gray-800 flex-shrink-0 text-xs">
+                {{ getLineTotal(i) | integerSeparator }} F
+              </span>
+            </div>
+            <!-- Total -->
+            <div class="flex items-center justify-between pt-2 mt-1">
+              <span class="text-sm font-bold text-gray-700">Total</span>
+              <span class="text-base font-bold text-primary-600">
+                {{ getTotalAmount() | integerSeparator }} FCFA
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ─────────────────────────────────────────────────
+           PANNEAU DROIT : Lignes produits
+      ───────────────────────────────────────────────── -->
+      <div class="flex-1 min-w-0 flex flex-col gap-3">
+
+        <!-- Barre de titre ligne produits + bouton ajouter -->
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <mat-icon class="text-primary-600">inventory_2</mat-icon>
+            <h2 class="text-sm sm:text-base font-semibold text-gray-800">
+              Produits
+              <span *ngIf="lineItems.length > 0"
+                class="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary-600 text-white text-xs font-bold">
+                {{ lineItems.length }}
+              </span>
+            </h2>
+          </div>
+          <button mat-raised-button color="primary" type="button" (click)="addLineItem()"
+            class="flex items-center gap-1 !h-9 !px-3">
+            <mat-icon class="text-base">add</mat-icon>
+            <span class="text-sm">Ajouter un produit</span>
+          </button>
+        </div>
+
+        <!-- État vide -->
+        <div *ngIf="lineItems.length === 0"
+          class="card rounded-xl shadow-sm flex flex-col items-center justify-center py-12 px-6 text-center">
+          <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <mat-icon class="text-gray-400 text-3xl">add_shopping_cart</mat-icon>
+          </div>
+          <p class="text-gray-500 text-sm mb-4">Aucun produit ajouté.</p>
+          <button mat-raised-button color="primary" type="button" (click)="addLineItem()"
+            class="flex items-center gap-1">
+            <mat-icon>add</mat-icon>
+            Ajouter le premier produit
+          </button>
+        </div>
+
+        <!-- ═══ LISTE DES LIGNES ═══ -->
+        <div formArrayName="line_items" class="flex flex-col gap-3">
+
+          <div *ngFor="let lineItem of lineItems.controls; let i = index" [formGroupName]="i" @fadeInUp
+            class="card rounded-xl shadow-sm overflow-hidden transition-shadow hover:shadow-md"
+            [class.ring-2]="lineItem.invalid && lineItem.touched"
+            [class.ring-red-300]="lineItem.invalid && lineItem.touched">
+
+            <!-- ── En-tête de la ligne ── -->
+            <div class="flex items-center justify-between gap-2 px-4 py-2.5 bg-gray-50 border-b">
+              <div class="flex items-center gap-2">
+                <span
+                  class="w-6 h-6 rounded-full bg-primary-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                  {{ i + 1 }}
+                </span>
+                <span class="text-sm font-semibold text-gray-700 truncate">
+                  {{ getProductName(i) }}
+                </span>
+                <!-- Badge numéros de série requis -->
+                <span *ngIf="requiresSerial(i)"
+                  class="hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs font-medium">
+                  <mat-icon class="text-xs" style="font-size:12px;width:12px;height:12px;">pin</mat-icon>
+                  Numéros de série
+                </span>
+              </div>
+              <div class="flex items-center gap-1 flex-shrink-0">
+                <!-- Sous-total de la ligne -->
+                <span *ngIf="getLineTotal(i) > 0" class="text-sm font-bold text-primary-600 mr-2 hidden sm:inline">
+                  {{ getLineTotal(i) | integerSeparator }} FCFA
+                </span>
+                <button mat-icon-button color="warn" type="button" (click)="removeLineItem(i)"
+                  matTooltip="Supprimer cette ligne" class="!w-8 !h-8">
+                  <mat-icon class="text-base">delete</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <!-- ── Corps de la ligne : grille compacte ── -->
+            <div class="p-3 sm:p-4">
+
+              <!-- Ligne principale : produit + qté + prix sur une seule rangée (desktop) -->
+              <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-3 items-start">
+
+                <!-- Sélecteur Produit — 6 colonnes -->
+                <div class="sm:col-span-6">
+                  <mat-form-field class="w-full" appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>Produit</mat-label>
+                    <mat-select formControlName="product_id" required (openedChange)="$event && setupProductSearch(i)"
+                      disableOptionCentering
+                      (selectionChange)="$event.value === '__search__' && lineItems.at(i).get('product_id')?.setValue(null, {emitEvent:false})">
+
+                      <!-- Recherche inline — pas de [disabled] pour éviter le grisage -->
+                      <mat-option class="!p-0 !min-h-0" [value]="'__search__'"
+                        (click)="$event.stopPropagation(); $event.preventDefault()"
+                        style="position:sticky;top:0;z-index:10;background:#fff;pointer-events:none;">
+                        <div class="flex items-center gap-2 px-3 py-2 border-b bg-gray-50" style="pointer-events:all;"
+                          (click)="$event.stopPropagation()">
+                          <mat-icon class="text-gray-400 text-base flex-shrink-0">search</mat-icon>
+                          <input *ngIf="productSearchCtrls[i]" [formControl]="productSearchCtrls[i]"
+                            placeholder="Rechercher un produit..."
+                            class="border-0 outline-none flex-1 text-sm bg-transparent w-full text-gray-800"
+                            style="opacity:1 !important; color: inherit;" (click)="$event.stopPropagation()"
+                            (keydown)="$event.stopPropagation()" />
+                          <svg *ngIf="isLoadingProducts[i]" class="w-4 h-4 animate-spin text-primary-500 flex-shrink-0"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                          </svg>
+                        </div>
+                      </mat-option>
+
+                      <mat-option *ngFor="let product of getProductsForLine(i)" [value]="product.id"
+                        [disabled]="isProductSelected(product.id, i)">
+                        <div class="flex items-center gap-2 py-0.5">
+                          <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5">
+                              <span class="text-sm font-medium truncate">{{ product.name }}</span>
+                              <span *ngIf="product.require_serial_number"
+                                class="flex-shrink-0 text-xs px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">
+                                SN
+                              </span>
+                              <span *ngIf="isProductSelected(product.id, i)"
+                                class="flex-shrink-0 text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">
+                                Déjà sélectionné
+                              </span>
+                            </div>
+                            <span *ngIf="product.description" class="text-xs text-gray-400 truncate block">
+                              {{ product.description }}
+                            </span>
+                          </div>
+                        </div>
+                      </mat-option>
+
+                      <mat-option *ngIf="getProductsForLine(i).length === 0 && !isLoadingProducts[i]" disabled>
+                        <span class="text-xs text-gray-400 italic">Aucun produit trouvé</span>
+                      </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="lineItem.get('product_id')?.hasError('required')">
+                      Produit requis
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <!-- Quantité — 2 colonnes -->
+                <div class="sm:col-span-2">
+                  <mat-form-field class="w-full" appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>Qté</mat-label>
+                    <input matInput type="number" [min]="usesMeasurements ? 0.001 : 1" [step]="usesMeasurements ? 0.001 : 1" formControlName="quantity" required />
+                    <mat-error *ngIf="lineItem.get('quantity')?.hasError('min')">
+                      {{ usesMeasurements ? 'Min. 0.001' : 'Min. 1' }}
+                    </mat-error>
+                    <mat-error *ngIf="lineItem.hasError('quantityMustBeInteger')">
+                      Quantite entiere requise pour cette boutique.
+                    </mat-error>
+                    <mat-error *ngIf="lineItem.hasError('quantityMustBeIntegerForSerial')">
+                      Quantite entiere requise pour les produits avec numero de serie.
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <!-- Prix unitaire — 3 colonnes -->
+                <div class="sm:col-span-3">
+                  <mat-form-field class="w-full" appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>Prix unitaire</mat-label>
+                    <input matInput type="number" min="0" step="1" formControlName="purchase_price" required />
+                    <span matSuffix class="text-xs text-gray-500 pr-1">FCFA</span>
+                    <mat-error *ngIf="lineItem.get('purchase_price')?.hasError('min')">≥ 0</mat-error>
+                  </mat-form-field>
+                </div>
+
+                <!-- Sous-total — 1 colonne (desktop) -->
+                <div class="sm:col-span-1 hidden sm:flex items-center justify-center pt-2">
+                  <div class="text-center">
+                    <p class="text-xs text-gray-400 leading-none mb-0.5">Total</p>
+                    <p class="text-sm font-bold text-primary-600 leading-none">
+                      {{ getLineTotal(i) | integerSeparator }}
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- ── Numéros de série ── -->
+              <div *ngIf="getSerialNumbers(i).length > 0" formArrayName="serial_numbers"
+                class="mt-3 pt-3 border-t border-dashed border-orange-200">
+
+                <div class="flex items-center gap-2 mb-2.5">
+                  <mat-icon style="font-size:15px;width:15px;height:15px;" class="text-orange-500">pin</mat-icon>
+                  <span class="text-xs font-semibold text-orange-700">
+                    Numéros de série —
+                    <span class="font-normal">
+                      {{ getSerialNumbers(i).length }} valeur{{ getSerialNumbers(i).length > 1 ? 's' : '' }} requise{{
+                      getSerialNumbers(i).length > 1 ? 's' : '' }}, toutes uniques
+                    </span>
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+                  <div *ngFor="let serial of getSerialNumbers(i).controls; let j = index" class="relative">
+                    <mat-form-field class="w-full" appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>N° {{ j + 1 }}</mat-label>
+                      <input matInput [formControlName]="j" type="text" placeholder="Ex: SN-{{ j + 1 }}"
+                        (input)="onSerialNumberChange(i)" />
+                      <!-- Icône de statut -->
+                      <mat-icon matSuffix *ngIf="serial.value && !serial.hasError('duplicateSerial')"
+                        class="text-green-500 text-base">check_circle</mat-icon>
+                      <mat-icon matSuffix *ngIf="serial.hasError('duplicateSerial')"
+                        class="text-red-500 text-base">error</mat-icon>
+                      <mat-error *ngIf="serial.hasError('required')">Requis</mat-error>
+                      <mat-error *ngIf="serial.hasError('duplicateSerial')">Numéro déjà utilisé</mat-error>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <!-- Alerte doublons globaux sur la ligne -->
+                <div *ngIf="lineItem.hasError('serialNumbersMismatch') && lineItem.touched"
+                  class="mt-2 flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
+                  <mat-icon class="text-red-500 text-sm flex-shrink-0">warning</mat-icon>
+                  Le nombre de numéros de série ne correspond pas à la quantité saisie.
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+        <!-- FIN liste des lignes -->
+
+        <!-- Total mobile (bas de page) -->
+        <div *ngIf="lineItems.length > 0"
+          class="lg:hidden card rounded-xl shadow-sm p-4 flex items-center justify-between">
+          <span class="text-sm font-semibold text-gray-700">Total approvisionnement</span>
+          <span class="text-lg font-bold text-primary-600">
+            {{ getTotalAmount() | integerSeparator }} FCFA
+          </span>
+        </div>
+
+      </div>
+      <!-- FIN panneau droit -->
+
+    </form>
+  </div>
+
+</div>

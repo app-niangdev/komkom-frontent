@@ -1,0 +1,245 @@
+<vex-store-header *ngIf="isReady" [company]="company" [store]="store" [onBack]="goBack"
+  pageSubtitle="Gestion des approvisionnements">
+</vex-store-header>
+
+<div *ngIf="isReady" class="w-full flex flex-col px-3 sm:px-6 py-4 min-h-0">
+
+  <div class="card mb-4 shadow-md rounded-lg bg-white overflow-hidden flex-shrink-0">
+    <div class="p-3 sm:p-4">
+      <div class="flex flex-col gap-3">
+
+        <!-- Ligne 1 : Titre + Bouton -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h1 class="text-lg sm:text-xl font-bold text-gray-800">
+              Liste des approvisionnements
+            </h1>
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-gray-600">
+              <span class="font-medium">Nombre d'approvisionnements : {{ meta.total }}</span>
+
+              <!-- Badge plage de dates active -->
+              <ng-container *ngIf="hasActiveDateFilter">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full
+                             bg-primary-50 text-primary-700 text-xs font-medium border border-primary-200">
+                  <mat-icon class="text-primary-500"
+                    style="font-size:14px; width:14px; height:14px;">date_range</mat-icon>
+                  {{ activeDateRangeLabel }} — {{ meta.total }} résultat{{ meta.total > 1 ? 's' : '' }}
+                </span>
+              </ng-container>
+            </div>
+          </div>
+
+          <button (click)="newProcurement()" color="primary" mat-raised-button matTooltip="Nouvel approvisionnement"
+            type="button" class="w-full sm:w-auto flex items-center justify-center shadow-md hover:shadow-lg
+                   transition-shadow duration-200 flex-shrink-0">
+            <mat-icon class="mr-1">add</mat-icon>
+            <span>Nouvel Approvisionnement</span>
+          </button>
+        </div>
+
+        <!-- Ligne 2 : Recherche + Dates -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+
+          <!-- Barre de recherche -->
+          <div class="flex items-center bg-white border border-primary-500 dark:bg-gray-800
+                      rounded-full overflow-hidden pl-4 h-10 flex-1 shadow-sm min-w-0">
+            <mat-icon class="text-secondary flex-none text-[20px]">search</mat-icon>
+            <input [formControl]="searchCtrl" (keyup.enter)="search()" class="border-0 h-10 outline-none pl-3 placeholder:text-secondary bg-transparent
+                     flex-auto text-sm w-full min-w-0" placeholder="Rechercher par fournisseur ou numéro..."
+              type="text" />
+          </div>
+
+          <!-- Date début -->
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full sm:w-44 flex-shrink-0">
+            <mat-label>Date début</mat-label>
+            <input matInput [matDatepicker]="startDatePicker" [formControl]="startDateControl" placeholder="jj/mm/aaaa"
+              readonly />
+            <mat-datepicker-toggle matIconSuffix [for]="startDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #startDatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <!-- Date fin -->
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full sm:w-44 flex-shrink-0">
+            <mat-label>Date fin</mat-label>
+            <input matInput [matDatepicker]="endDatePicker" [formControl]="endDateControl" placeholder="jj/mm/aaaa"
+              readonly />
+            <mat-datepicker-toggle matIconSuffix [for]="endDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #endDatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <!-- Bouton Rechercher (desktop) -->
+          <button mat-raised-button color="primary" (click)="search()"
+            matTooltip="Rechercher (texte et/ou intervalle de dates)"
+            class="hidden sm:flex flex-shrink-0 items-center gap-1 h-10 px-3">
+            <mat-icon style="font-size:18px; width:18px; height:18px;">search</mat-icon>
+            <span class="text-sm">Rechercher</span>
+          </button>
+
+          <!-- Bouton Reset (desktop) -->
+          <button mat-icon-button (click)="resetFilters()" matTooltip="Réinitialiser tous les filtres"
+            [disabled]="!hasActiveDateFilter && !searchCtrl.value"
+            class="hidden sm:flex flex-shrink-0 text-gray-500 hover:text-primary-500 self-center">
+            <mat-icon>restart_alt</mat-icon>
+          </button>
+
+          <!-- Boutons Rechercher + Reset (mobile) -->
+          <div class="sm:hidden flex gap-2 w-full">
+            <button mat-raised-button color="primary" (click)="search()"
+              class="flex-1 flex items-center justify-center gap-1">
+              <mat-icon class="text-sm">search</mat-icon>
+              Rechercher
+            </button>
+            <button mat-stroked-button (click)="resetFilters()" [disabled]="!hasActiveDateFilter && !searchCtrl.value"
+              class="flex-1 flex items-center justify-center gap-1 text-gray-600">
+              <mat-icon class="text-sm">restart_alt</mat-icon>
+              Réinitialiser
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <vex-page-layout-content>
+
+    <!-- Grille de cartes -->
+    <div *ngIf="procurements.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div *ngFor="let procurement of procurements" class="card rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all
+                 duration-200 cursor-pointer border-l-4" [ngClass]="{
+            'border-yellow-500': procurement.status === 'pending',
+            'border-green-500': procurement.status === 'received',
+            'border-red-500':   procurement.status === 'cancelled'
+          }" (click)="details(procurement)">
+
+        <!-- En-tête de la carte -->
+        <div class="p-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <mat-icon class="text-primary-600">receipt</mat-icon>
+              <span class="font-bold text-sm text-gray-700 truncate">
+                {{ procurement.order_number || 'N/A' }}
+              </span>
+            </div>
+            <button mat-icon-button type="button" (click)="$event.stopPropagation()"
+              [matMenuTriggerData]="{ item: procurement }" [matMenuTriggerFor]="actionsMenu"
+              class="focus:outline-none -mr-2">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Corps de la carte -->
+        <div class="p-4 space-y-3">
+
+          <!-- Fournisseur -->
+          <div class="flex items-start gap-2">
+            <mat-icon class="text-gray-500 text-sm mt-0.5">business</mat-icon>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-gray-500 mb-0.5">Fournisseur</p>
+              <p class="text-sm font-semibold text-gray-800 truncate">
+                {{ procurement.supplier.name || 'N/A' }} - {{ procurement.supplier.phone_one }}
+                <span *ngIf="procurement.supplier.phone_two">
+                  / {{ procurement.supplier.phone_two }}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Date -->
+          <div class="flex items-center gap-2">
+            <mat-icon class="text-gray-500 text-sm">calendar_today</mat-icon>
+            <div class="flex-1">
+              <p class="text-xs text-gray-500 mb-0.5">Date</p>
+              <p class="text-sm font-medium text-gray-800">
+                {{ procurement.created_at | date:'dd MMMM yyyy':'':'fr' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Montant total -->
+          <div class="flex items-center gap-2 p-2 bg-primary-50 rounded">
+            <div class="flex-1">
+              <p class="text-xs text-gray-600 mb-0.5">Montant total</p>
+              <p class="text-base font-bold text-primary-600">
+                {{ procurement.total_amount || 0 | integerSeparator }} FCFA
+              </p>
+            </div>
+          </div>
+
+          <!-- Statut -->
+          <div class="flex items-center justify-between pt-2 border-t">
+            <span class="text-xs text-gray-600">Statut</span>
+            <span class="px-2 py-1 text-xs font-semibold rounded-full" [ngClass]="{
+                  'bg-yellow-100 text-yellow-800': procurement.status === 'pending',
+                  'bg-green-100 text-green-800':  procurement.status === 'received',
+                  'bg-red-100 text-red-800':       procurement.status === 'cancelled'
+                }">
+              {{ getStatusLabel(procurement.status) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message quand aucun approvisionnement -->
+    <div *ngIf="procurements.length === 0"
+      class="card flex-auto flex flex-col items-center justify-center py-10 sm:py-16 shadow-sm">
+      <img class="m-12 h-64" src="assets/img/illustrations/idea.svg" />
+      <h2 class="text-xl sm:text-2xl mt-4 mb-2 text-center px-6 font-medium">
+        Aucun approvisionnement trouvé
+      </h2>
+
+      <!-- Message contextuel si filtre actif -->
+      <p *ngIf="hasActiveDateFilter" class="text-sm text-gray-500 mb-4 text-center px-6">
+        {{ activeDateRangeLabel }}
+      </p>
+
+      <div class="flex gap-3 flex-wrap justify-center">
+        <button *ngIf="hasActiveDateFilter" mat-stroked-button (click)="resetFilters()"
+          class="flex items-center gap-1 text-gray-600">
+          <mat-icon class="text-sm">restart_alt</mat-icon>
+          Effacer les filtres
+        </button>
+        <button mat-raised-button color="primary" (click)="newProcurement()"
+          class="shadow-md hover:shadow-lg transition-shadow duration-200">
+          <mat-icon class="mr-1">add</mat-icon>
+          Créer un approvisionnement
+        </button>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <mat-paginator *ngIf="procurements.length > 0" [pageSizeOptions]="meta.pageSizeOptions" [pageSize]="meta.per_page"
+      [pageIndex]="meta.current_page - 1" [length]="meta.total" (page)="pageEvent($event)" class="sticky left-0 mt-4">
+    </mat-paginator>
+
+  </vex-page-layout-content>
+</div>
+
+<!-- Menu des actions -->
+<mat-menu #actionsMenu="matMenu" xPosition="before" yPosition="below">
+  <ng-template let-item="item" matMenuContent>
+    <button mat-menu-item (click)="details(item)" class="flex items-center">
+      <mat-icon color="accent" class="mr-2">visibility</mat-icon>
+      <span>Voir détails</span>
+    </button>
+
+    <button *ngIf="item.status === 'pending'" mat-menu-item (click)="validateProcurement(item)"
+      class="flex items-center">
+      <mat-icon class="mr-2 text-green-600">check_circle</mat-icon>
+      <span class="text-green-600 font-semibold">Valider</span>
+    </button>
+
+    <button *ngIf="item.status === 'pending'" mat-menu-item (click)="cancelProcurement(item)" class="flex items-center">
+      <mat-icon class="mr-2 text-orange-600">cancel</mat-icon>
+      <span class="text-orange-600 font-semibold">Annuler</span>
+    </button>
+
+    <button mat-menu-item (click)="edit(item)" class="flex items-center">
+      <mat-icon color="primary" class="mr-2">edit</mat-icon>
+      <span>Modifier</span>
+    </button>
+  </ng-template>
+</mat-menu>

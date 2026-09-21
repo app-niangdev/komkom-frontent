@@ -1,0 +1,102 @@
+.category-list-page {
+  &.pb-safe {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.category-search-input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+// ─── Cartes mobile ───────────────────────────────────────────────────────────
+.category-mobile-card {
+  min-height: 4.5rem;
+  -webkit-tap-highlight-color: transparent;
+
+  &__icon {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
+// ─── Panneau formulaire mobile (bottom sheet) ────────────────────────────────
+.category-form-sheet {
+  max-height: min(88vh, 640px);
+  border-radius: 1rem 1rem 0 0;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12);
+  animation: category-sheet-in 0.25s ease-out;
+
+  &__backdrop {
+    background: rgba(15, 23, 42, 0.45);
+    animation: category-fade-in 0.2s ease-out;
+  }
+
+  &__handle {
+    width: 2.5rem;
+    height: 0.25rem;
+    border-radius: 9999px;
+    background: #cbd5e1;
+  }
+}
+
+@keyframes category-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes category-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// ─── FAB mobile ──────────────────────────────────────────────────────────────
+.category-fab {
+  position: fixed;
+  right: 1rem;
+  bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  z-index: 20;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+// ─── Pagination responsive ───────────────────────────────────────────────────
+.category-paginator {
+  ::ng-deep .mat-mdc-paginator-container {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.25rem 0.5rem;
+    padding: 0.5rem 0.25rem;
+    min-height: 3.5rem;
+  }
+
+  @media (max-width: 767px) {
+    ::ng-deep .mat-mdc-paginator-page-size-label,
+    ::ng-deep .mat-mdc-paginator-page-size {
+      display: none;
+    }
+
+    ::ng-deep .mat-mdc-paginator-range-label {
+      order: -1;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 0.25rem;
+      font-size: 0.75rem;
+    }
+  }
+}
+
+// Tablette : formulaire latéral un peu plus compact
+@media (min-width: 768px) and (max-width: 1023px) {
+  .category-form-panel {
+    .mat-mdc-form-field {
+      font-size: 0.875rem;
+    }
+  }
+}

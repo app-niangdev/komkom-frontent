@@ -1,0 +1,78 @@
+// ─── Fix : champ de recherche dans mat-select ──────────────────────────────
+// Angular Material applique opacity:0.38 sur les mat-option disabled.
+// On cible l'option sticky de recherche pour rétablir l'opacité complète
+// et masquer le ripple + le highlight de sélection.
+
+.mat-mdc-option {
+  // Empêche l'option search d'être mise en surbrillance au survol
+  &[value="__search__"] {
+    cursor: default !important;
+    user-select: none;
+
+    // Rétablir l'opacité à 1 sur tous les enfants
+    opacity: 1 !important;
+    color: inherit !important;
+
+    // Supprimer le fond de hover/focus Material
+    &:hover,
+    &:focus,
+    &.mdc-list-item--selected {
+      background-color: transparent !important;
+    }
+
+    // Masquer le ripple
+    .mat-ripple,
+    .mat-mdc-option-ripple {
+      display: none !important;
+    }
+
+    // Rétablir l'opacité sur le contenu interne
+    .mdc-list-item__primary-text {
+      opacity: 1 !important;
+      color: inherit !important;
+      width: 100%;
+      padding: 0;
+    }
+
+    input {
+      opacity: 1 !important;
+      color: #1f2937 !important; // text-gray-800
+      cursor: text !important;
+      pointer-events: all !important;
+
+      &::placeholder {
+        color: #9ca3af; // text-gray-400
+        opacity: 1;
+      }
+    }
+  }
+}
+
+// ─── Fix : bouton Enregistrer (mat-raised-button) ──────────────────────────
+// mat-raised-button génère un span.mdc-button__label qui est inline-flex
+// mais l'icône mat-icon et le texte peuvent se désaligner verticalement.
+
+.mat-mdc-raised-button,
+.mat-mdc-button,
+.mat-mdc-stroked-button {
+  .mdc-button__label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem; // gap-1.5
+    line-height: 1;
+  }
+
+  mat-icon {
+    // Force mat-icon à se comporter comme un élément inline-flex centré
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.125rem; // 18px
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+    line-height: 1 !important;
+    vertical-align: middle;
+  }
+}

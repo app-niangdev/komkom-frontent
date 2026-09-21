@@ -1,0 +1,186 @@
+<div class="invoice-details-container p-6">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Détails de la Facture</h1>
+    <button mat-raised-button color="primary" (click)="goBack()">
+      <mat-icon class="sm:mr-1">arrow_back</mat-icon>
+      Retour
+    </button>
+  </div>
+
+  <komkom-page-loader *ngIf="isLoading" message="Chargement de la facture…"></komkom-page-loader>
+
+  <div *ngIf="!isLoading && invoice" class="space-y-6">
+    <!-- Informations de la facture -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Informations de la Facture</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="pt-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <p class="text-gray-600 text-sm">Numéro de Facture</p>
+            <p class="font-semibold">{{ invoice.invoice_number }}</p>
+          </div>
+          <div>
+            <p class="text-gray-600 text-sm">Date</p>
+            <p class="font-semibold">{{ invoice.date | date: 'd MMMM y' }}</p>
+          </div>
+          <div>
+            <p class="text-gray-600 text-sm">Client</p>
+            <p class="font-semibold">{{ invoice.customer_name }}</p>
+          </div>
+          <div>
+            <p class="text-gray-600 text-sm">Statut</p>
+            <span [class]="'status-badge ' + getStatusClass(invoice.invoice_status)">
+              {{ getStatusLabel(invoice.invoice_status) }}
+            </span>
+          </div>
+        </div>
+
+        <mat-divider class="my-4"></mat-divider>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <p class="text-gray-600 text-sm">Montant Total</p>
+            <p class="font-bold text-lg text-blue-600">{{ invoice.amount_total | integerSeparator }} FCFA</p>
+          </div>
+          <div>
+            <p class="text-gray-600 text-sm">Montant Payé</p>
+            <p class="font-bold text-lg text-green-600">{{ invoice.amount_paid | integerSeparator }} FCFA</p>
+          </div>
+          <div>
+            <p class="text-gray-600 text-sm">Balance</p>
+            <p class="font-bold text-lg" [class.text-red-600]="invoice.balance > 0"
+              [class.text-green-600]="invoice.balance === 0">
+              {{ invoice.balance | integerSeparator }} FCFA
+            </p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Informations du client -->
+    <mat-card *ngIf="customer">
+      <mat-card-header>
+        <mat-card-title>Informations du Client</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="pt-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <p class="text-gray-600 text-sm">Nom</p>
+            <p class="font-semibold">{{ customer.name }}</p>
+          </div>
+          <div>
+            <p class="text-gray-600 text-sm">Téléphone</p>
+            <p class="font-semibold">{{ customer.phone }}</p>
+          </div>
+          <div *ngIf="customer.email">
+            <p class="text-gray-600 text-sm">Email</p>
+            <p class="font-semibold">{{ customer.email }}</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Produits concernés par la vente -->
+    <mat-card *ngIf="sale?.line_items?.length">
+      <mat-card-header>
+        <mat-card-title>Produits Vendus</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="pt-4">
+        <table mat-table [dataSource]="sale!.line_items!" class="w-full">
+          <!-- Product Column -->
+          <ng-container matColumnDef="product">
+            <th mat-header-cell *matHeaderCellDef class="font-semibold">Produit</th>
+            <td mat-cell *matCellDef="let item">{{ item.product_name }}</td>
+          </ng-container>
+
+          <!-- Quantity Column -->
+          <ng-container matColumnDef="quantity">
+            <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Quantité</th>
+            <td mat-cell *matCellDef="let item" class="text-right">{{ item.quantity }}</td>
+          </ng-container>
+
+          <!-- Unit Price Column -->
+          <ng-container matColumnDef="unit_price">
+            <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Prix Unitaire</th>
+            <td mat-cell *matCellDef="let item" class="text-right">{{ item.unit_price | integerSeparator }} FCFA</td>
+          </ng-container>
+
+          <!-- Subtotal Column -->
+          <ng-container matColumnDef="subtotal">
+            <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Sous-total</th>
+            <td mat-cell *matCellDef="let item" class="text-right">
+              <span class="font-semibold">{{ item.subtotal | integerSeparator }} FCFA</span>
+            </td>
+          </ng-container>
+
+          <!-- Serial Numbers Column -->
+          <ng-container matColumnDef="serial_numbers">
+            <th mat-header-cell *matHeaderCellDef class="font-semibold">Numéros de Série</th>
+            <td mat-cell *matCellDef="let item">
+              <span *ngIf="item.serial_numbers?.length; else noSerial" class="flex flex-wrap gap-1">
+                <span *ngFor="let serial of item.serial_numbers" class="serial-badge">{{ serial }}</span>
+              </span>
+              <ng-template #noSerial>-</ng-template>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="productColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: productColumns;" class="hover:bg-gray-50"></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Liste des paiements -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Historique des Paiements</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="pt-4">
+        <div *ngIf="payments.length === 0" class="text-center py-8 text-gray-500">
+          <mat-icon class="text-6xl mb-2">receipt_long</mat-icon>
+          <p>Aucun paiement enregistré pour cette facture</p>
+        </div>
+
+        <div *ngIf="payments.length > 0">
+          <table mat-table [dataSource]="payments" class="w-full">
+            <!-- Date Column -->
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef class="font-semibold">Date</th>
+              <td mat-cell *matCellDef="let payment">{{ payment.date | date: 'd MMMM y, HH:mm' }}</td>
+            </ng-container>
+
+            <!-- Payment Type Column -->
+            <ng-container matColumnDef="payment_type">
+              <th mat-header-cell *matHeaderCellDef class="font-semibold">Mode de Paiement</th>
+              <td mat-cell *matCellDef="let payment">
+                <span class="payment-type-badge">
+                  {{ getPaymentTypeLabel(payment.payment_type) }}
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Amount Column -->
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Montant</th>
+              <td mat-cell *matCellDef="let payment" class="text-right">
+                <span class="font-semibold text-green-600">{{ payment.amount | integerSeparator }} FCFA</span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover:bg-gray-50"></tr>
+          </table>
+
+          <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+            <div class="flex justify-between items-center">
+              <span class="font-semibold">Total des paiements:</span>
+              <span class="text-xl font-bold text-green-600">{{ invoice.amount_paid | integerSeparator }} FCFA</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

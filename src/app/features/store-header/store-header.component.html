@@ -1,0 +1,53 @@
+<header class="store-header" [class.collapsed]="collapsed">
+
+  <!-- ═══════════════════════════════════════════════
+       BANDE SUPÉRIEURE : Logo + Nom entreprise + Retour
+  ═══════════════════════════════════════════════ -->
+  <div class="store-header__top" *ngIf="company">
+    <div class="store-header__brand">
+      <!-- Logo -->
+      <div class="store-header__logo">
+        <img *ngIf="company.logo_url" [src]="company.logo_url" [alt]="company.name" class="store-header__logo-img">
+        <img *ngIf="!company.logo_url" src="assets/img/logo/logo.png" alt="Logo" class="store-header__logo-fallback">
+      </div>
+
+      <!-- Infos texte -->
+      <div class="store-header__brand-text">
+        <h1 class="store-header__company-name">{{ company.name }}</h1>
+        <p *ngIf="pageSubtitle" class="store-header__subtitle">{{ pageSubtitle }}</p>
+      </div>
+    </div>
+
+    <!-- Actions à droite -->
+    <div class="store-header__actions">
+      <!-- Bouton collapse (mobile/tablette) -->
+      <button mat-icon-button class="store-header__collapse-btn" (click)="toggleCollapse()"
+        [matTooltip]="collapsed ? 'Afficher les infos boutique' : 'Masquer les infos boutique'"
+        aria-label="Afficher/Masquer infos boutique">
+        <mat-icon>{{ collapsed ? 'expand_less' : 'expand_more' }}</mat-icon>
+      </button>
+
+      <!-- Bouton Retour -->
+      <button *ngIf="showBackButton" mat-raised-button color="primary" class="store-header__back-btn"
+        (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+        <span class="store-header__back-label">{{ backLabel }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       BANDE INFÉRIEURE : Infos de la boutique (store)
+       Responsive : row sur desktop, colonne sur mobile
+  ═══════════════════════════════════════════════ -->
+  <div class="store-header__store-bar" *ngIf="store && !collapsed">
+    <ng-container *ngFor="let item of storeInfoItems; let i = index">
+      <!-- Séparateur entre items (desktop uniquement via CSS) -->
+      <div class="store-header__store-item" [class]="'store-header__store-item--' + item.type">
+        <mat-icon class="store-header__store-icon">{{ item.icon }}</mat-icon>
+        <span class="store-header__store-label">{{ item.label }}</span>
+      </div>
+    </ng-container>
+  </div>
+
+</header>

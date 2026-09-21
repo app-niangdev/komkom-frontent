@@ -1,0 +1,89 @@
+<div class="mt-6 flex flex-col md:flex-row md:items-start">
+  <div class="flex-auto">
+    <div class="card">
+      <div class="px-6 py-4 border-b">
+        <h2 class="title m-0">Mettre à jour le mot de passe</h2>
+      </div>
+      <div class="p-6">
+        <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+
+          <div class="grid grid-cols-1 sm:grid-cols-1 gap-4 mb-6">
+            <mat-form-field class="flex-1 block">
+              <mat-label>Mot de passe actuel</mat-label>
+              <input [type]="inputType" formControlName="current_password" matInput required />
+              <button (click)="togglePassword()" mat-icon-button matIconSuffix matTooltip="Toggle Visibility"
+                type="button">
+                <mat-icon *ngIf="visible" svgIcon="mat:visibility"></mat-icon>
+                <mat-icon *ngIf="!visible" svgIcon="mat:visibility_off"></mat-icon>
+              </button>
+              <mat-error *ngIf="passwordForm.controls['new_password'].errors?.['required']">
+                Le mot de passe est obligatoire
+              </mat-error>
+              <mat-error *ngIf="passwordForm.controls['new_password'].errors?.['minlength']">
+                Le mot de passe doit comporter minumum 8 caractères
+              </mat-error>
+              <mat-error *ngIf="passwordForm.controls['new_password'].errors?.['maxlength']">
+                Le mot de passe doit comporter maximum 8 caractères
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <mat-form-field class="flex-1 block">
+              <mat-label>Nouveau mot de passe</mat-label>
+              <input [type]="inputType" formControlName="new_password" matInput required />
+              <button (click)="togglePassword()" mat-icon-button matIconSuffix matTooltip="Toggle Visibility"
+                type="button">
+                <mat-icon *ngIf="visible" svgIcon="mat:visibility"></mat-icon>
+                <mat-icon *ngIf="!visible" svgIcon="mat:visibility_off"></mat-icon>
+              </button>
+              <mat-error *ngIf="passwordForm.controls['new_password'].errors?.['required']">
+                Le mot de passe est obligatoire
+              </mat-error>
+              <mat-error *ngIf="passwordForm.controls['new_password'].errors?.['minlength']">
+                Le mot de passe doit comporter minumum 8 caractères
+              </mat-error>
+              <mat-error *ngIf="passwordForm.controls['new_password'].errors?.['maxlength']">
+                Le mot de passe doit comporter maximum 8 caractères
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field class="flex-1 block">
+              <mat-label>Confirmer le nouveau mot de passe</mat-label>
+              <input [type]="inputType" formControlName="new_password_confirmation" matInput required />
+              <button (click)="togglePassword()" mat-icon-button matIconSuffix matTooltip="Toggle Visibility"
+                type="button">
+                <mat-icon *ngIf="visible" svgIcon="mat:visibility"></mat-icon>
+                <mat-icon *ngIf="!visible" svgIcon="mat:visibility_off"></mat-icon>
+              </button>
+              <mat-error *ngIf="passwordForm.controls['new_password_confirmation'].errors?.['required']">
+                Le mot de passe est obligatoire
+              </mat-error>
+              <mat-error *ngIf="passwordForm.controls['new_password_confirmation'].errors?.['minlength']">
+                Le mot de passe doit comporter minumum 8 caractères
+              </mat-error>
+              <mat-error *ngIf="passwordForm.controls['new_password_confirmation'].errors?.['maxlength']">
+                Le mot de passe doit comporter maximum 8 caractères
+              </mat-error>
+              <mat-error
+                *ngIf="passwordForm.errors?.['passwordMismatch'] && (passwordForm.get('new_password_confirmation')?.dirty || passwordForm.get('new_password_confirmation')?.touched)">
+                Les mots de passe ne correspondent pas
+              </mat-error>
+
+            </mat-form-field>
+          </div>
+
+          <!-- Boutons d'action -->
+          <div class="flex justify-end gap-2">
+            <button mat-raised-button color="primary" type="submit" [disabled]="passwordForm.invalid">
+              <mat-icon *ngIf="isSubmitting" svgIcon="mat:hourglass_empty" class="animate-spin mr-2"></mat-icon>
+              <span>Changer le mot de passe</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+
+  </div>
+</div>

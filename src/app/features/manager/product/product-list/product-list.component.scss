@@ -1,0 +1,205 @@
+.product-list-page {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+
+  &.pb-safe {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.product-list-content {
+  width: 100%;
+  min-width: 0;
+}
+
+.product-grid-wrapper {
+  width: 100%;
+  min-width: 0;
+  // Pas de overflow-auto ici : évite un recalcul de largeur au 1er rendu (barre de défilement)
+}
+
+.icon-sm {
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+// ─── Filtres repliables (mobile uniquement) ─────────────────────────────────
+.mobile-filters-panel {
+  @media (max-width: 639px) {
+    overflow: hidden;
+    transition: max-height 0.25s ease, opacity 0.2s ease;
+
+    &--collapsed {
+      display: none;
+    }
+  }
+}
+
+// ─── Cartes grille desktop (10 colonnes, compactes) ──────────────────────────
+.product-grid {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.product-grid-card {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  &__image {
+    width: 100%;
+    height: 8.5rem;
+    padding: 0.35rem;
+    flex-shrink: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  &__placeholder-icon {
+    font-size: 1.75rem;
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  &__body {
+    padding: 0.35rem 0.4rem 0.45rem;
+  }
+
+  &__title {
+    font-size: 0.65rem;
+    min-height: 1.6rem;
+    margin-bottom: 0.15rem;
+  }
+
+  &__price {
+    font-size: 0.65rem;
+    line-height: 1.2;
+  }
+
+  &__stock {
+    margin-top: 0.2rem;
+    font-size: 0.6rem;
+  }
+}
+
+.product-menu-btn {
+  width: 2.75rem !important;
+  height: 2.75rem !important;
+  padding: 0 !important;
+
+  .mat-icon {
+    font-size: 1.35rem;
+  }
+
+  &--compact {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    line-height: 1.5rem !important;
+
+    .mat-icon {
+      font-size: 1rem;
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+}
+
+.product-mobile-card {
+  min-height: 5.5rem;
+  -webkit-tap-highlight-color: transparent;
+}
+
+// Pagination responsive
+.product-paginator {
+  ::ng-deep .mat-mdc-paginator-container {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.25rem 0.5rem;
+    padding: 0.5rem 0.25rem;
+    min-height: 3.5rem;
+  }
+
+  ::ng-deep .mat-mdc-paginator-page-size {
+    margin: 0;
+  }
+
+  ::ng-deep .mat-mdc-paginator-range-label {
+    margin: 0 0.25rem;
+    font-size: 0.75rem;
+  }
+
+  @media (max-width: 639px) {
+    ::ng-deep .mat-mdc-paginator-page-size-label,
+    ::ng-deep .mat-mdc-paginator-page-size {
+      display: none;
+    }
+
+    ::ng-deep .mat-mdc-paginator-range-label {
+      order: -1;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 0.25rem;
+    }
+  }
+}
+
+@media (max-width: 639px) {
+  .product-list-page {
+    .mat-mdc-form-field {
+      font-size: 0.875rem;
+    }
+  }
+}
+
+// Tablette : cartes légèrement plus grandes
+@media (min-width: 640px) and (max-width: 1023px) {
+  .product-grid-card {
+    &__title {
+      font-size: 0.7rem;
+      min-height: 1.75rem;
+    }
+
+    &__price {
+      font-size: 0.7rem;
+    }
+  }
+}
+
+// Desktop (10 colonnes) : cartes encore plus compactes
+@media (min-width: 1024px) {
+  .product-grid-card {
+    &__image {
+      height: 6.5rem;
+      padding: 0.25rem;
+    }
+
+    &__placeholder-icon {
+      font-size: 1.4rem;
+      width: 1.4rem;
+      height: 1.4rem;
+    }
+
+    &__body {
+      padding: 0.25rem 0.3rem 0.35rem;
+    }
+
+    &__title {
+      font-size: 0.6rem;
+      min-height: 1.4rem;
+      margin-bottom: 0.1rem;
+    }
+
+    &__price {
+      font-size: 0.6rem;
+    }
+
+    &__stock {
+      margin-top: 0.15rem;
+      font-size: 0.55rem;
+    }
+  }
+}

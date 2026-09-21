@@ -1,0 +1,27 @@
+<komkom-page-loader *ngIf="isLoading" class="bg-pattern w-full h-full" message="Vérification en cours…"></komkom-page-loader>
+
+<div *ngIf="!isLoading" class="bg-pattern w-full h-full flex flex-col items-center justify-center">
+  <div [@fadeInUp] class="card overflow-hidden w-full max-w-md">
+    <div *ngIf="!trueMessage" class="flex flex-col items-center justify-center space-y-3 m-4">
+      <mat-icon class="icon-5xl" color="primary">check_circle</mat-icon>
+      <div>
+        <span class="w-1/2 text-green-500 font-medium text-lg" *ngIf="message">
+          {{message}}</span>
+      </div>
+      <button (click)="back()" class="w-1/2 mb-2" color="primary" mat-raised-button type="button">
+        <span>GO TO LOGIN</span>
+      </button>
+    </div>
+
+    <div class="flex flex-col items-center justify-center space-y-3 m-4">
+      <mat-icon class="icon-5xl" [style.color]="isError ? 'red' : 'inherit'">check_circle</mat-icon>
+      <div>
+        <span class="w-1/2 text-red-500 font-medium text-lg">
+          {{error}}</span>
+      </div>
+      <button class="w-1/2" color="primary" mat-raised-button type="button">
+        <span>SEND A NEW LINK</span>
+      </button>
+    </div>
+  </div>
+</div>

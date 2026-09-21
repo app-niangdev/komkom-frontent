@@ -1,0 +1,239 @@
+<vex-store-header [company]="company" [store]="store" pageSubtitle="Gestion des clients">
+</vex-store-header>
+
+<vex-page-layout>
+  <vex-page-layout-content [class.container]="layoutCtrl.value === 'fullwidth'"
+    [class.px-6]="layoutCtrl.value === 'boxed'" class="-mt-6">
+
+    <div class="card overflow-auto mt-4">
+
+      <!-- ═══════════════════════════════════════════
+           HEADER — Desktop / Tablette
+      ════════════════════════════════════════════ -->
+      <div class="bg-app-bar px-6 h-16 border-b sticky left-0 hidden md:flex items-center gap-4">
+        <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:border-r rtl:border-l flex-none whitespace-nowrap">
+          Liste des IMEIS
+        </h2>
+
+        <mat-form-field subscriptSizing="dynamic" class="w-full max-w-lg">
+          <mat-icon matIconPrefix>search</mat-icon>
+          <input matInput [formControl]="searchCtrl" (keyup.enter)="search()" placeholder="Recherchez ici..."
+            type="text" />
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="button" (click)="search()" class="flex-none"
+          matTooltip="Rechercher">
+          <mat-icon class="mr-1">search</mat-icon>
+          Rechercher
+        </button>
+
+        <button mat-stroked-button type="button" (click)="resetSearch()" class="flex-none"
+          matTooltip="Réinitialiser la recherche">
+          <mat-icon class="mr-1">refresh</mat-icon>
+          Réinitialiser
+        </button>
+
+        <span class="flex-1"></span>
+
+        <button [matMenuTriggerFor]="columnFilterMenu" class="flex-none" mat-icon-button
+          matTooltip="Filtrer les colonnes" type="button">
+          <mat-icon>filter_list</mat-icon>
+        </button>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           HEADER — Mobile
+      ════════════════════════════════════════════ -->
+      <div class="bg-app-bar px-4 py-3 border-b sticky left-0 flex flex-col gap-3 md:hidden">
+        <div class="flex items-center justify-between">
+          <h2 class="title my-0 text-base">Liste des IMEIS</h2>
+          <div class="flex items-center gap-1">
+            <button [matMenuTriggerFor]="columnFilterMenu" mat-icon-button matTooltip="Filtrer les colonnes"
+              type="button">
+              <mat-icon>filter_list</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <mat-form-field subscriptSizing="dynamic" class="w-full">
+          <mat-icon matIconPrefix>search</mat-icon>
+          <input matInput [formControl]="searchCtrl" (keyup.enter)="search()" placeholder="Rechercher..."
+            type="text" />
+        </mat-form-field>
+
+        <div class="flex items-center gap-2">
+          <button mat-raised-button color="primary" type="button" (click)="search()"
+            class="flex-1 !h-10 flex items-center justify-center">
+            <mat-icon class="mr-1">search</mat-icon>
+            Rechercher
+          </button>
+          <button mat-stroked-button type="button" (click)="resetSearch()"
+            class="flex-1 !h-10 flex items-center justify-center">
+            <mat-icon class="mr-1">refresh</mat-icon>
+            Réinitialiser
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           LISTE — Mobile (cards)
+      ════════════════════════════════════════════ -->
+      <div class="md:hidden">
+        <!-- Empty state mobile -->
+        <div *ngIf="serialNumbers.length === 0"
+          class="flex flex-col items-center justify-center py-12 px-4 text-center">
+          <img class="h-48" src="assets/img/illustrations/idea.svg" alt="Aucun résultat" />
+          <h2 class="headline mt-4">Aucun IMEI ne correspond à vos filtres</h2>
+        </div>
+
+        <!-- Cards mobile -->
+        <div *ngIf="serialNumbers.length > 0" class="flex flex-col gap-3 p-4">
+          <div *ngFor="let sn of serialNumbers" class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+
+            <!-- En-tête de la card -->
+            <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
+              <div class="flex items-center gap-3 flex-1 min-w-0">
+                <div class="rounded-full h-10 w-10 flex items-center justify-center
+                            text-primary-600 bg-primary-600/10 flex-shrink-0">
+                  <mat-icon>sim_card</mat-icon>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-semibold text-sm text-gray-900 truncate">
+                    {{ sn.product_name }}
+                  </div>
+                  <div class="text-xs text-gray-500 truncate">
+                    {{ sn.product_description }}
+                  </div>
+                </div>
+              </div>
+              <button mat-icon-button type="button" [matMenuTriggerFor]="actionsMenu" [matMenuTriggerData]="{ sn: sn }"
+                class="flex-shrink-0 -mr-2">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+            </div>
+
+            <!-- Détails de la card -->
+            <div class="space-y-2 text-sm">
+              <div class="flex items-center justify-between">
+                <span class="text-gray-500 flex items-center gap-1">
+                  <mat-icon class="!w-4 !h-4 !text-base leading-none">tag</mat-icon>
+                  IMEI
+                </span>
+                <span [class]="getStatusClass(sn.is_sold)" class="font-medium truncate ml-2 max-w-[55%] text-right">
+                  {{ sn.serial_number }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-500">Statut</span>
+                <span [class]="getStatusClass(sn.is_sold)">
+                  {{ getStatusLabel(sn.is_sold) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paginator mobile -->
+        <mat-paginator *ngIf="serialNumbers.length > 0" [pageSizeOptions]="meta.pageSizeOptions"
+          [pageSize]="meta.per_page" [pageIndex]="meta.current_page - 1" [length]="meta.total"
+          (page)="pageEvent($event)" class="sticky left-0">
+        </mat-paginator>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           TABLE — Desktop / Tablette
+      ════════════════════════════════════════════ -->
+      <table [dataSource]="dataSource" class="w-full hidden md:table" mat-table matSort>
+
+        <ng-container matColumnDef="product_details">
+          <th mat-header-cell *matHeaderCellDef class="uppercase">Produit</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="font-medium">{{ row.product_name }}</div>
+            <div class="text-secondary text-sm">{{ row.product_description }}</div>
+          </td>
+        </ng-container>
+
+        <ng-container *ngFor="let column of columns">
+          <ng-container [matColumnDef]="column.property" *ngIf="column.type === 'text'
+                   && column.property !== 'product_name'
+                   && column.property !== 'product_description'">
+            <th mat-header-cell *matHeaderCellDef class="uppercase" mat-sort-header>
+              {{ column.label }}
+            </th>
+            <td mat-cell *matCellDef="let row" [ngClass]="column.cssClasses">
+              <ng-container [ngSwitch]="column.property">
+
+                <ng-container *ngSwitchCase="'is_sold'">
+                  <span [class]="getStatusClass(row.is_sold)">
+                    {{ getStatusLabel(row.is_sold) }}
+                  </span>
+                </ng-container>
+
+                <ng-container *ngSwitchCase="'serial_number'">
+                  <span [class]="getStatusClass(row.is_sold)">
+                    {{ row.serial_number }}
+                  </span>
+                </ng-container>
+
+                <ng-container *ngSwitchDefault>
+                  {{ row[column.property] }}
+                </ng-container>
+
+              </ng-container>
+            </td>
+          </ng-container>
+        </ng-container>
+
+        <!-- Colonne Actions -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="uppercase">Actions</th>
+          <td mat-cell *matCellDef="let row" class="text-secondary w-10">
+            <button mat-icon-button (click)="update(row)" matTooltip="Modifier IMEI">
+              <mat-icon color="primary">edit</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="visibleColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: visibleColumns"></tr>
+      </table>
+
+      <!-- Empty state desktop -->
+      <div *ngIf="serialNumbers.length === 0"
+        class="hidden md:flex flex-col items-center justify-center py-12 text-center">
+        <img class="h-64" src="assets/img/illustrations/idea.svg" alt="Aucun résultat" />
+        <h2 class="headline mt-4 mb-6">Aucun IMEI ne correspond à vos filtres</h2>
+      </div>
+
+      <!-- Paginator desktop -->
+      <mat-paginator *ngIf="serialNumbers.length > 0" [pageSizeOptions]="meta.pageSizeOptions"
+        [pageSize]="meta.per_page" [pageIndex]="meta.current_page - 1" [length]="meta.total" (page)="pageEvent($event)"
+        class="sticky left-0 hidden md:block">
+      </mat-paginator>
+
+    </div>
+  </vex-page-layout-content>
+</vex-page-layout>
+
+<!-- ═══════════════════════════════════════════
+     MENU — Filtre colonnes
+════════════════════════════════════════════ -->
+<mat-menu #columnFilterMenu="matMenu" xPosition="before" yPosition="below">
+  <button *ngFor="let column of columns" (click)="toggleColumnVisibility(column, $event)" class="mat-menu-item block">
+    <mat-checkbox (click)="$event.stopPropagation()" [(ngModel)]="column.visible" color="primary">
+      {{ column.label }}
+    </mat-checkbox>
+  </button>
+</mat-menu>
+
+<!-- ═══════════════════════════════════════════
+     MENU — Actions (mobile)
+════════════════════════════════════════════ -->
+<mat-menu #actionsMenu="matMenu" xPosition="before" yPosition="below">
+  <ng-template let-sn="sn" matMenuContent>
+    <button (click)="update(sn)" mat-menu-item>
+      <mat-icon color="primary">edit</mat-icon>
+      <span>Modifier IMEI</span>
+    </button>
+  </ng-template>
+</mat-menu>
